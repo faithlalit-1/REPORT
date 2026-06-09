@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-font="md">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RECORD</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e5ea;
+    --accent: #2563eb;
+    --accent-text: #ffffff;
+    --danger: #dc2626;
+    --row-hover: #f0f3ff;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+  }
+  html[data-theme="dark"] {
+    --bg: #11151c;
+    --panel: #1a2029;
+    --text: #e8eaf0;
+    --muted: #9aa3b2;
+    --border: #2b333f;
+    --accent: #4f86ff;
+    --accent-text: #ffffff;
+    --danger: #f0584b;
+    --row-hover: #222c3a;
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+  html[data-theme="contrast"] {
+    --bg: #000000;
+    --panel: #000000;
+    --text: #ffffff;
+    --muted: #ffd400;
+    --border: #ffffff;
+    --accent: #ffd400;
+    --accent-text: #000000;
+    --danger: #ff5252;
+    --row-hover: #1a1a00;
+    --shadow: none;
+  }
+
+  html[data-font="sm"] { font-size: 14px; }
+  html[data-font="md"] { font-size: 16px; }
+  html[data-font="lg"] { font-size: 19px; }
+  html[data-font="xl"] { font-size: 23px; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    transition: background .2s, color .2s;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  header.top h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    letter-spacing: .5px;
+  }
+  .sub { color: var(--muted); font-size: .85rem; margin-top: .15rem; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .3rem .5rem;
+  }
+  .control-group label { font-size: .75rem; color: var(--muted); }
+
+  button, select {
+    font: inherit;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .45rem .7rem;
+    cursor: pointer;
+  }
+  button:focus-visible, select:focus-visible, a:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn-accent {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .icon-btn {
+    min-width: 2.2rem;
+    text-align: center;
+    padding: .4rem .55rem;
+  }
+  .icon-btn[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .85rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-head h2 { margin: 0; font-size: 1.05rem; }
+  .count-pill {
+    font-size: .75rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .1rem .6rem;
+  }
+
+  /* scrollable index */
+  .index {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .index li {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .index li:last-child { border-bottom: none; }
+  .index li:hover { background: var(--row-hover); }
+  .file-link {
+    flex: 1;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    min-width: 0;
+  }
+  .file-link .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-link:hover .name { text-decoration: underline; text-decoration-color: var(--accent); }
+  .doc-ico { color: var(--accent); flex: none; }
+  .del-btn {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: transparent;
+    font-weight: 600;
+    flex: none;
+  }
+  .del-btn:hover { background: var(--danger); color: #fff; }
+
+  .empty, .hint {
+    padding: 2rem 1.1rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  .hint code {
+    background: var(--row-hover);
+    padding: .1rem .35rem;
+    border-radius: 5px;
+  }
+
+  /* search */
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .7rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-row input[type="search"] {
+    flex: 1;
+    font: inherit;
+    padding: .5rem .7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .search-info { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+  .file-meta { display: flex; flex-direction: column; min-width: 0; }
+  .snippet {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: .8rem;
+    margin-top: .15rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  mark { background: var(--accent); color: var(--accent-text); border-radius: 3px; padding: 0 .12rem; }
+  .score-pill {
+    font-size: .68rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .05rem .45rem;
+    flex: none;
+  }
+  .match-count {
+    font-size: .68rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: .05rem .45rem;
+    flex: none;
+    font-weight: 600;
+  }
+  .matches { margin-top: .4rem; display: flex; flex-direction: column; gap: .3rem; }
+  .match-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .35rem .55rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .match-item:hover { background: var(--row-hover); border-color: var(--accent); }
+  .match-no {
+    display: inline-block;
+    min-width: 1.4em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: .4rem;
+  }
+  .match-more { font-size: .75rem; color: var(--muted); padding: .2rem .1rem; }
+
+  /* dialog */
+  dialog {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    max-width: 420px;
+    width: 92%;
+    padding: 0;
+  }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  .dlg-body { padding: 1.25rem 1.4rem; }
+  .dlg-body h3 { margin: 0 0 .5rem; color: var(--danger); }
+  .dlg-body p { margin: .4rem 0; }
+  .dlg-body input {
+    width: 100%;
+    font: inherit;
+    margin-top: .6rem;
+    padding: .55rem .7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .dlg-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .6rem;
+    margin-top: 1rem;
+  }
+  .target-name { font-weight: 700; word-break: break-all; }
+
+  /* reveal-helper status bar */
+  .helper-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .4rem .7rem;
+    margin-bottom: .9rem;
+    font-size: .82rem;
+  }
+  .helper-status { display: flex; align-items: center; gap: .5rem; color: var(--muted); }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot-on { background: #22c55e; }
+  .dot-off { background: var(--danger); }
+  .dot-wait { background: #f59e0b; }
+  .helper-action { padding: .3rem .65rem; font-size: .8rem; }
+  .helper-title { color: var(--text) !important; }
+  #helperCmd {
+    display: inline-block;
+    background: var(--row-hover);
+    padding: .35rem .55rem;
+    border-radius: 6px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    word-break: break-all;
+  }
+
+  /* go-to-location button */
+  .go-btn {
+    color: var(--muted);
+    border-color: var(--border);
+    background: transparent;
+    font-weight: 600;
+    flex: none;
+  }
+  .go-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* edit button + editor dialog */
+  .edit-btn {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: transparent;
+    font-weight: 600;
+    flex: none;
+  }
+  .edit-btn:hover { background: var(--accent); color: var(--accent-text); }
+
+  dialog.edit-dialog {
+    max-width: 960px;
+    width: 94%;
+  }
+  .edit-body { padding: 1.1rem 1.25rem 1.25rem; display: flex; flex-direction: column; }
+  .edit-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .edit-head h3 { margin: 0; word-break: break-all; }
+  .edit-hint { font-size: .75rem; color: var(--muted); }
+  #editArea {
+    width: 100%;
+    height: 64vh;
+    margin-top: .8rem;
+    font: .85rem/1.5 ui-monospace, Menlo, Consolas, monospace;
+    padding: .7rem .8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    resize: vertical;
+    white-space: pre;
+    tab-size: 2;
+  }
+  #editArea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: .6rem 1.1rem;
+    border-radius: 10px;
+    font-size: .9rem;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* tabs */
+  .tabs {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: -1px;
+  }
+  .tab {
+    font: inherit;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: .55rem 1.1rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .tab[aria-selected="true"] {
+    background: var(--panel);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .tab:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>RECORD</h1>
+      <div class="sub" id="subText">Index of files in the <code>html</code> folder</div>
+    </div>
+    <div class="controls">
+      <div class="control-group" role="group" aria-label="Theme">
+        <label for="themeSel">Theme</label>
+        <select id="themeSel" aria-label="Choose colour theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="contrast">High contrast</option>
+        </select>
+      </div>
+      <div class="control-group" role="group" aria-label="Font size">
+        <label>Font</label>
+        <button class="icon-btn" id="fontDown" aria-label="Decrease font size">A−</button>
+        <button class="icon-btn" id="fontUp" aria-label="Increase font size">A+</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="helper-bar" id="helperBar">
+    <span class="helper-status">
+      <span class="dot dot-wait" id="helperDot" aria-hidden="true"></span>
+      Reveal helper: <span id="helperStateText">checking…</span>
+    </span>
+    <button id="helperBtn" class="helper-action">Recheck</button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Record collections">
+    <button class="tab" id="tab-html" role="tab" aria-controls="indexList"
+            aria-selected="true" data-key="html">HTML</button>
+    <button class="tab" id="tab-text" role="tab" aria-controls="indexList"
+            aria-selected="false" data-key="text">Text</button>
+    <button class="tab" id="tab-docx" role="tab" aria-controls="indexList"
+            aria-selected="false" data-key="docx">Word</button>
+    <button class="tab" id="tab-excel" role="tab" aria-controls="indexList"
+            aria-selected="false" data-key="excel">Excel</button>
+  </div>
+
+  <section class="panel" aria-labelledby="idxHead">
+    <div class="panel-head">
+      <h2 id="idxHead">HTML records</h2>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="count-pill" id="countPill" aria-live="polite">—</span>
+        <button id="refreshBtn" aria-label="Refresh list" title="Refresh">↻</button>
+        <button class="btn-accent" id="pickBtn">Open html folder</button>
+      </div>
+    </div>
+    <div class="search-row">
+      <input id="searchInput" type="search" placeholder="Search records by name or content…"
+             aria-label="Search records by name or content" autocomplete="off" />
+      <span class="search-info" id="searchInfo" aria-live="polite"></span>
+    </div>
+    <ul class="index" id="indexList" aria-label="Records" tabindex="0"></ul>
+  </section>
+</div>
+
+<dialog id="delDialog" aria-labelledby="delTitle">
+  <form method="dialog" class="dlg-body" id="delForm">
+    <h3 id="delTitle">Delete record?</h3>
+    <p>You are about to permanently delete:</p>
+    <p class="target-name" id="delTarget"></p>
+    <p>To confirm, type <strong>delete</strong> below.</p>
+    <input id="delInput" type="text" autocomplete="off"
+           placeholder="type: delete" aria-label="Type the word delete to confirm" />
+    <div class="dlg-actions">
+      <button type="button" id="delCancel">Cancel</button>
+      <button type="submit" class="del-btn" id="delConfirm" disabled>Delete</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="editDialog" class="edit-dialog" aria-labelledby="editTitle">
+  <form method="dialog" class="edit-body" id="editForm">
+    <div class="edit-head">
+      <h3 id="editTitle">Edit record</h3>
+      <span class="edit-hint" id="editHint">Changes are saved straight to the file on disk.</span>
+    </div>
+    <textarea id="editArea" spellcheck="false"
+              aria-label="File contents" wrap="off"></textarea>
+    <div class="dlg-actions">
+      <button type="button" id="editCancel">Cancel</button>
+      <button type="submit" class="btn-accent" id="editSave">Save changes</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="helperDialog" aria-labelledby="helperTitle">
+  <div class="dlg-body">
+    <h3 id="helperTitle" class="helper-title">Start the reveal helper</h3>
+    <p>Browsers can't launch apps (security), so a tiny local helper opens
+       Finder / Explorer for the <strong>Go</strong> button.</p>
+    <p><strong>macOS:</strong> double-click <code>start-reveal-helper.command</code>
+       in the RECORD folder.</p>
+    <p><strong>Windows / terminal:</strong> run this from the RECORD folder:</p>
+    <p><code id="helperCmd">python3 reveal-helper.py</code></p>
+    <p class="edit-hint">Leave it running, then come back here — the status turns green automatically.</p>
+    <div class="dlg-actions">
+      <button type="button" id="helperCmdCopy">Copy command</button>
+      <button type="button" class="btn-accent" id="helperClose">Done</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const DB_NAME = "record-app";
+  const STORE = "handles";
+
+  const root = document.documentElement;
+  const listEl = document.getElementById("indexList");
+  const countPill = document.getElementById("countPill");
+  const pickBtn = document.getElementById("pickBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const themeSel = document.getElementById("themeSel");
+  const fontUp = document.getElementById("fontUp");
+  const fontDown = document.getElementById("fontDown");
+  const toast = document.getElementById("toast");
+
+  const delDialog = document.getElementById("delDialog");
+  const delForm = document.getElementById("delForm");
+  const delTarget = document.getElementById("delTarget");
+  const delInput = document.getElementById("delInput");
+  const delConfirm = document.getElementById("delConfirm");
+  const delCancel = document.getElementById("delCancel");
+
+  const editDialog = document.getElementById("editDialog");
+  const editForm = document.getElementById("editForm");
+  const editTitle = document.getElementById("editTitle");
+  const editArea = document.getElementById("editArea");
+  const editCancel = document.getElementById("editCancel");
+
+  const helperDot = document.getElementById("helperDot");
+  const helperStateText = document.getElementById("helperStateText");
+  const helperBtn = document.getElementById("helperBtn");
+  const helperDialog = document.getElementById("helperDialog");
+  const helperCmd = document.getElementById("helperCmd");
+  const helperCmdCopy = document.getElementById("helperCmdCopy");
+  const helperClose = document.getElementById("helperClose");
+
+  const searchInput = document.getElementById("searchInput");
+  const searchInfo = document.getElementById("searchInfo");
+  const subText = document.getElementById("subText");
+  const idxHead = document.getElementById("idxHead");
+  const tabEls = Array.from(document.querySelectorAll(".tab"));
+
+  const supportsFS = "showDirectoryPicker" in window;
+
+  /* ---------- collections (tabs) ---------- */
+  const collections = {
+    html: {
+      key: "html", label: "HTML", dir: "html",
+      re: /\.html?$/i, read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
+      editable: true,
+      handle: null, loaded: false, records: [], docFreq: new Map(), query: ""
+    },
+    text: {
+      key: "text", label: "Text", dir: "text",
+      re: /\.(txt|md|markdown|log|csv|json|text|sql|xml|yml|yaml)$/i,
+      read: async (f) => plainText(await f.text()), handleKey: "textDir",
+      editable: true,
+      handle: null, loaded: false, records: [], docFreq: new Map(), query: ""
+    },
+    docx: {
+      key: "docx", label: "Word", dir: "docx",
+      re: /\.docx$/i, read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "docxDir",
+      editable: false,
+      handle: null, loaded: false, records: [], docFreq: new Map(), query: ""
+    },
+    excel: {
+      key: "excel", label: "Excel", dir: "excel",
+      re: /\.(xlsx|xlsm|csv)$/i,
+      read: async (f) => {
+        if (/\.csv$/i.test(f.name)) {
+          const raw = await f.text();
+          const grid = csvToGrid(raw);
+          return grid ? gridToText(grid) : plainText(raw);
+        }
+        return xlsxToText(await f.arrayBuffer());
+      },
+      handleKey: "excelDir", editable: false,
+      handle: null, loaded: false, records: [], docFreq: new Map(), query: ""
+    }
+  };
+  let active = collections.html;
+
+  /* ---------- accessibility: theme + font ---------- */
+  const FONTS = ["sm", "md", "lg", "xl"];
+
+  function applyTheme(t) {
+    root.setAttribute("data-theme", t);
+    themeSel.value = t;
+    localStorage.setItem("record-theme", t);
+  }
+  function applyFont(f) {
+    root.setAttribute("data-font", f);
+    localStorage.setItem("record-font", f);
+  }
+  function stepFont(dir) {
+    const i = FONTS.indexOf(root.getAttribute("data-font"));
+    const next = Math.min(FONTS.length - 1, Math.max(0, i + dir));
+    applyFont(FONTS[next]);
+  }
+
+  applyTheme(localStorage.getItem("record-theme") || "light");
+  applyFont(localStorage.getItem("record-font") || "md");
+
+  themeSel.addEventListener("change", () => applyTheme(themeSel.value));
+  fontUp.addEventListener("click", () => stepFont(1));
+  fontDown.addEventListener("click", () => stepFont(-1));
+
+  /* ---------- toast ---------- */
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+
+  /* ---------- IndexedDB: remember the chosen folder ---------- */
+  function idb(mode, fn) {
+    return new Promise((resolve, reject) => {
+      const open = indexedDB.open(DB_NAME, 1);
+      open.onupgradeneeded = () => open.result.createObjectStore(STORE);
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const db = open.result;
+        const tx = db.transaction(STORE, mode);
+        const req = fn(tx.objectStore(STORE));
+        tx.oncomplete = () => { db.close(); resolve(req && req.result); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+      };
+    });
+  }
+  const saveHandle = (key, h) => idb("readwrite", (s) => s.put(h, key));
+  const loadHandle = (key) => idb("readonly", (s) => s.get(key));
+
+  async function ensurePermission(handle, write) {
+    const opts = { mode: write ? "readwrite" : "read" };
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  }
+
+  /* ---------- pick / restore folder ---------- */
+  async function pickFolder() {
+    if (!supportsFS) { renderUnsupported(); return; }
+    try {
+      const handle = await window.showDirectoryPicker({ id: active.key, mode: "readwrite" });
+      active.handle = handle;
+      active.loaded = false;
+      await saveHandle(active.handleKey, handle).catch(() => {});
+      await listFiles();
+    } catch (err) {
+      if (err && err.name !== "AbortError") showToast("Could not open folder.");
+    }
+  }
+
+  async function tryRestore() {
+    if (!supportsFS) { renderUnsupported(); return; }
+    // restore stored handles for every collection (without prompting)
+    for (const c of Object.values(collections)) {
+      try { c.handle = await loadHandle(c.handleKey); } catch (_) { c.handle = null; }
+    }
+    if (active.handle &&
+        await active.handle.queryPermission({ mode: "readwrite" }) === "granted") {
+      await listFiles();
+    } else {
+      renderHint(!!active.handle);
+    }
+  }
+
+  // Re-grant access to a previously remembered folder (one click, no re-navigation).
+  async function reconnectActive() {
+    if (!active.handle) { pickFolder(); return; }
+    try {
+      const granted = (await active.handle.requestPermission({ mode: "readwrite" })) === "granted";
+      if (granted) { active.loaded = false; await listFiles(); }
+      else showToast("Permission was not granted.");
+    } catch (_) { showToast("Could not reconnect — use Open folder."); }
+  }
+
+  /* ---------- tab switching ---------- */
+  function updateChrome() {
+    tabEls.forEach(t => t.setAttribute("aria-selected", String(t.dataset.key === active.key)));
+    idxHead.textContent = active.label + " records";
+    subText.innerHTML = "Index of files in the <code>" + active.dir + "</code> folder";
+    pickBtn.textContent = "Open " + active.dir + " folder";
+    searchInput.placeholder = "Search " + active.label.toLowerCase() +
+      " records by name or content…";
+    listEl.setAttribute("aria-label", active.label + " records");
+  }
+
+  async function switchTab(key) {
+    if (!collections[key] || active.key === key) return;
+    active.query = searchInput.value;        // remember query of the tab we leave
+    active = collections[key];
+    updateChrome();
+    searchInput.value = active.query;
+    if (!supportsFS) { renderUnsupported(); return; }
+    if (active.handle && !active.loaded &&
+        await active.handle.queryPermission({ mode: "readwrite" }) === "granted") {
+      await listFiles();
+    } else if (active.loaded) {
+      applySearch();
+    } else {
+      renderHint(!!active.handle);
+    }
+  }
+
+  /* ---------- list files + build search index ---------- */
+  // each record: { name, text, tf:Map, len:number }; docFreq: Map(term -> #docs)
+  const STOP = new Set(("a an the and or but if of to in on at for is are was were be been " +
+    "this that these those it its with as by from into over under html head body").split(" "));
+
+  function tokenize(s) {
+    return (s.toLowerCase().match(/[a-z0-9_]+/g) || []).filter(t => t.length >= 2 && !STOP.has(t));
+  }
+  function htmlToText(html) {
+    // drop scripts/styles, then strip tags
+    const stripped = html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ");
+    const doc = document.createElement("textarea");
+    doc.innerHTML = stripped;
+    return doc.value.replace(/\s+/g, " ").trim();
+  }
+  function plainText(raw) {
+    return raw.replace(/\s+/g, " ").trim();
+  }
+
+  /* ---------- .docx text extraction (no libraries) ----------
+     A .docx is a ZIP. We read the ZIP central directory, locate
+     word/document.xml, inflate it with the browser's DecompressionStream,
+     then convert the WordprocessingML to plain text. */
+  async function inflateRaw(bytes) {
+    if (!("DecompressionStream" in window)) throw new Error("no DecompressionStream");
+    const ds = new DecompressionStream("deflate-raw");
+    const stream = new Response(bytes).body.pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  function wordXmlToText(xml) {
+    let s = xml
+      .replace(/<w:tab\b[^>]*\/?>/g, "\t")
+      .replace(/<w:br\b[^>]*\/?>/g, "\n")
+      .replace(/<\/w:p>/g, "\n")
+      .replace(/<[^>]+>/g, "");
+    const ta = document.createElement("textarea");
+    ta.innerHTML = s;
+    return ta.value.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
+      .replace(/[ \t]{2,}/g, " ").trim();
+  }
+
+  /* Generic ZIP reader (Office files are ZIP archives). Builds an index of the
+     central directory, then inflates individual entries on demand. */
+  function zipIndex(ab) {
+    const bytes = new Uint8Array(ab);
+    const dv = new DataView(ab);
+    const decoder = new TextDecoder();
+
+    // locate End Of Central Directory record (scan from the end)
+    let eocd = -1;
+    const minPos = Math.max(0, bytes.length - 65557);
+    for (let i = bytes.length - 22; i >= minPos; i--) {
+      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) return null;
+
+    const cdCount = dv.getUint16(eocd + 10, true);
+    let p = dv.getUint32(eocd + 16, true);   // central directory offset
+    const entries = new Map();
+
+    for (let n = 0; n < cdCount; n++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const method = dv.getUint16(p + 10, true);
+      const compSize = dv.getUint32(p + 20, true);
+      const nameLen = dv.getUint16(p + 28, true);
+      const extraLen = dv.getUint16(p + 30, true);
+      const commentLen = dv.getUint16(p + 32, true);
+      const lho = dv.getUint32(p + 42, true);
+      const name = decoder.decode(bytes.subarray(p + 46, p + 46 + nameLen));
+      entries.set(name, { method, compSize, lho });
+      p += 46 + nameLen + extraLen + commentLen;
+    }
+    return { bytes, dv, entries };
+  }
+
+  async function zipReadBytes(zip, name) {
+    const e = zip.entries.get(name);
+    if (!e) return null;
+    // jump to the local file header to find where the data actually starts
+    const lfnLen = zip.dv.getUint16(e.lho + 26, true);
+    const lexLen = zip.dv.getUint16(e.lho + 28, true);
+    const dataStart = e.lho + 30 + lfnLen + lexLen;
+    const comp = zip.bytes.subarray(dataStart, dataStart + e.compSize);
+    return e.method === 0 ? comp : await inflateRaw(comp);
+  }
+
+  async function zipReadText(zip, name) {
+    const b = await zipReadBytes(zip, name);
+    return b ? new TextDecoder().decode(b) : "";
+  }
+
+  async function docxXml(ab) {
+    const zip = zipIndex(ab);
+    return zip ? await zipReadText(zip, "word/document.xml") : "";
+  }
+
+  async function docxToText(ab) {
+    const xml = await docxXml(ab);
+    return xml ? wordXmlToText(xml) : "";
+  }
+
+  /* ---------- .xlsx / .xlsm spreadsheet extraction (no libraries) ----------
+     Read the shared-strings table and each worksheet's cell grid, then render
+     to plain text (for search) or HTML tables (for the viewer). */
+  function colToIndex(ref) {
+    const m = /^([A-Z]+)/.exec(ref || "");
+    if (!m) return 0;
+    let n = 0;
+    for (const ch of m[1]) n = n * 26 + (ch.charCodeAt(0) - 64);
+    return n - 1;
+  }
+  function xmlChild(el, local) {
+    for (const c of el.children) if (c.localName === local) return c;
+    return null;
+  }
+  function parseSharedStrings(xml) {
+    if (!xml) return [];
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const out = [];
+    for (const si of doc.getElementsByTagName("si")) {
+      let s = "";
+      for (const t of si.getElementsByTagName("t")) s += t.textContent;
+      out.push(s);
+    }
+    return out;
+  }
+  function parseSheet(xml, shared) {
+    const grid = [];
+    if (!xml) return grid;
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    for (const row of doc.getElementsByTagName("row")) {
+      const cells = [];
+      let max = -1;
+      for (const c of row.getElementsByTagName("c")) {
+        const colIdx = colToIndex(c.getAttribute("r"));
+        const type = c.getAttribute("t");
+        const vEl = xmlChild(c, "v");
+        const isEl = xmlChild(c, "is");
+        let val = "";
+        if (type === "s") {
+          const idx = vEl ? parseInt(vEl.textContent, 10) : -1;
+          val = (idx >= 0 && shared[idx] != null) ? shared[idx] : "";
+        } else if (type === "inlineStr" && isEl) {
+          for (const t of isEl.getElementsByTagName("t")) val += t.textContent;
+        } else if (vEl) {
+          val = vEl.textContent;
+        }
+        cells[colIdx] = val;
+        if (colIdx > max) max = colIdx;
+      }
+      const rowArr = [];
+      for (let i = 0; i <= max; i++) rowArr.push(cells[i] == null ? "" : cells[i]);
+      grid.push(rowArr);
+    }
+    return grid;
+  }
+  async function xlsxToSheets(ab) {
+    const zip = zipIndex(ab);
+    if (!zip) return [];
+    const shared = parseSharedStrings(await zipReadText(zip, "xl/sharedStrings.xml"));
+
+    // sheet display names, in workbook order
+    const names = [];
+    const wbXml = await zipReadText(zip, "xl/workbook.xml");
+    if (wbXml) {
+      const wb = new DOMParser().parseFromString(wbXml, "application/xml");
+      for (const s of wb.getElementsByTagName("sheet")) names.push(s.getAttribute("name") || "");
+    }
+
+    // worksheet parts, sorted by numeric suffix (sheet1.xml, sheet2.xml, …)
+    const parts = [];
+    for (const name of zip.entries.keys()) {
+      const m = /^xl\/worksheets\/sheet(\d+)\.xml$/i.exec(name);
+      if (m) parts.push({ name, n: parseInt(m[1], 10) });
+    }
+    parts.sort((a, b) => a.n - b.n);
+
+    const sheets = [];
+    for (let i = 0; i < parts.length; i++) {
+      const grid = parseSheet(await zipReadText(zip, parts[i].name), shared);
+      sheets.push({ name: names[i] || ("Sheet " + (i + 1)), grid });
+    }
+    return sheets;
+  }
+  function gridToText(grid) {
+    return grid.map(r => r.join("\t")).join("\n").replace(/[ \t]{2,}/g, " ").trim();
+  }
+  async function xlsxToText(ab) {
+    const sheets = await xlsxToSheets(ab);
+    const lines = [];
+    for (const sh of sheets) {
+      lines.push(sh.name);
+      for (const row of sh.grid) lines.push(row.join("\t"));
+    }
+    return lines.join("\n").replace(/[ \t]{2,}/g, " ").trim();
+  }
+  function sheetsToHtml(sheets) {
+    if (!sheets.length) return "<p><em>No sheets found.</em></p>";
+    let html = "";
+    for (const sh of sheets) {
+      if (sh.name) html += "<h2>" + escapeHtml(sh.name) + "</h2>";
+      if (!sh.grid.length) { html += "<p><em>(empty)</em></p>"; continue; }
+      html += "<table>";
+      for (const row of sh.grid) {
+        html += "<tr>";
+        for (const cell of row) html += "<td>" + escapeHtml(cell == null ? "" : String(cell)) + "</td>";
+        html += "</tr>";
+      }
+      html += "</table>";
+    }
+    return html;
+  }
+
+  /* ---------- .csv parsing (quoted fields, delimiter sniffing) ----------
+     Returns a 2-D grid when the data looks tabular, or null when it doesn't
+     (so the caller can fall back to showing the raw text). */
+  function detectDelimiter(line) {
+    const candidates = [",", ";", "\t", "|"];
+    let best = ",", bestCount = 0;
+    for (const d of candidates) {
+      let count = 0, inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') inQ = !inQ;
+        else if (ch === d && !inQ) count++;
+      }
+      if (count > bestCount) { bestCount = count; best = d; }
+    }
+    return { delim: best, count: bestCount };
+  }
+  function parseCsv(text, delim) {
+    const rows = [];
+    let row = [], field = "", inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQ = false;
+        } else field += ch;
+      } else if (ch === '"') {
+        inQ = true;
+      } else if (ch === delim) {
+        row.push(field); field = "";
+      } else if (ch === "\n") {
+        row.push(field); rows.push(row); row = []; field = "";
+      } else if (ch !== "\r") {
+        field += ch;
+      }
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+  function csvToGrid(text) {
+    text = text.replace(/^\uFEFF/, "");
+    const firstLine = (text.split(/\r?\n/, 1)[0]) || "";
+    const { delim, count } = detectDelimiter(firstLine);
+    if (count === 0) return null;   // no delimiters -> treat as plain text
+    return parseCsv(text, delim);
+  }
+
+  /* ---------- .docx -> formatted HTML (for the viewer) ---------- */
+  function dChild(el, tag) {
+    for (const c of el.children) if (c.tagName === tag) return c;
+    return null;
+  }
+  function dBool(el) {
+    if (!el) return false;
+    const v = el.getAttribute("w:val");
+    return v !== "false" && v !== "0" && v !== "off";
+  }
+  function dRunHtml(r) {
+    const rPr = dChild(r, "w:rPr");
+    let text = "";
+    for (const n of r.children) {
+      if (n.tagName === "w:t") text += escapeHtml(n.textContent);
+      else if (n.tagName === "w:tab") text += "&emsp;";
+      else if (n.tagName === "w:br" || n.tagName === "w:cr") text += "<br>";
+    }
+    if (text === "") return "";
+    let style = "", b = false, i = false;
+    if (rPr) {
+      b = dBool(dChild(rPr, "w:b"));
+      i = dBool(dChild(rPr, "w:i"));
+      const deco = [];
+      const u = dChild(rPr, "w:u");
+      if (u && u.getAttribute("w:val") !== "none") deco.push("underline");
+      if (dBool(dChild(rPr, "w:strike"))) deco.push("line-through");
+      if (deco.length) style += "text-decoration:" + deco.join(" ") + ";";
+      const color = dChild(rPr, "w:color");
+      if (color) { const v = color.getAttribute("w:val"); if (v && v !== "auto") style += "color:#" + v + ";"; }
+      const sz = dChild(rPr, "w:sz");
+      if (sz) { const v = parseInt(sz.getAttribute("w:val"), 10); if (v) style += "font-size:" + (v / 2) + "pt;"; }
+      const hl = dChild(rPr, "w:highlight");
+      if (hl) { const v = hl.getAttribute("w:val"); if (v && v !== "none") style += "background:" + v + ";"; }
+      const va = dChild(rPr, "w:vertAlign");
+      if (va) {
+        const v = va.getAttribute("w:val");
+        if (v === "superscript") style += "vertical-align:super;font-size:smaller;";
+        if (v === "subscript") style += "vertical-align:sub;font-size:smaller;";
+      }
+    }
+    let html = text;
+    if (b) html = "<strong>" + html + "</strong>";
+    if (i) html = "<em>" + html + "</em>";
+    if (style) html = '<span style="' + style + '">' + html + "</span>";
+    return html;
+  }
+  function dInline(container) {
+    let out = "";
+    for (const n of container.children) {
+      if (n.tagName === "w:r") out += dRunHtml(n);
+      else if (n.tagName === "w:hyperlink") {
+        let h = "";
+        for (const r of n.children) if (r.tagName === "w:r") h += dRunHtml(r);
+        if (h) out += '<span style="color:#1a56db;text-decoration:underline">' + h + "</span>";
+      }
+    }
+    return out;
+  }
+  function dParagraph(p) {
+    const pPr = dChild(p, "w:pPr");
+    let tag = "p", css = "", isList = false;
+    if (pPr) {
+      isList = !!dChild(pPr, "w:numPr");
+      const styleEl = dChild(pPr, "w:pStyle");
+      const sv = styleEl && styleEl.getAttribute("w:val");
+      if (sv) {
+        const m = /Heading(\d)/i.exec(sv);
+        if (m) tag = "h" + Math.min(6, parseInt(m[1], 10));
+        else if (/^Title$/i.test(sv)) tag = "h1";
+        else if (/^Subtitle$/i.test(sv)) css += "color:#5f6368;font-size:1.15rem;";
+      }
+      const jc = dChild(pPr, "w:jc");
+      const al = jc && jc.getAttribute("w:val");
+      const map = { both: "justify", center: "center", right: "right", left: "left", distribute: "justify" };
+      if (al && map[al]) css += "text-align:" + map[al] + ";";
+    }
+    let inner = dInline(p);
+    const styleAttr = css ? ' style="' + css + '"' : "";
+    if (isList) return { type: "li", html: "<li" + styleAttr + ">" + (inner || "&nbsp;") + "</li>" };
+    if (inner === "") return { type: "block", html: "<p>&nbsp;</p>" };
+    return { type: "block", html: "<" + tag + styleAttr + ">" + inner + "</" + tag + ">" };
+  }
+  function dTable(tbl) {
+    let rows = "";
+    for (const tr of tbl.children) {
+      if (tr.tagName !== "w:tr") continue;
+      let cells = "";
+      for (const tc of tr.children) {
+        if (tc.tagName !== "w:tc") continue;
+        let inner = "";
+        for (const c of tc.children) {
+          if (c.tagName === "w:p") inner += dParagraph(c).html;
+          else if (c.tagName === "w:tbl") inner += dTable(c);
+        }
+        cells += "<td>" + inner + "</td>";
+      }
+      rows += "<tr>" + cells + "</tr>";
+    }
+    return "<table>" + rows + "</table>";
+  }
+  function docxXmlToHtml(xml) {
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const body = doc.getElementsByTagName("w:body")[0];
+    if (!body) return "";
+    const blocks = [];
+    for (const n of body.children) {
+      if (n.tagName === "w:p") blocks.push(dParagraph(n));
+      else if (n.tagName === "w:tbl") blocks.push({ type: "block", html: dTable(n) });
+    }
+    let html = "", inList = false;
+    for (const b of blocks) {
+      if (b.type === "li") { if (!inList) { html += "<ul>"; inList = true; } html += b.html; }
+      else { if (inList) { html += "</ul>"; inList = false; } html += b.html; }
+    }
+    if (inList) html += "</ul>";
+    return html;
+  }
+
+  async function listFiles() {
+    const col = active;
+    if (!col.handle) { renderHint(); return; }
+    if (!(await ensurePermission(col.handle, false))) { renderHint(true); return; }
+
+    const handles = [];
+    try {
+      for await (const [name, entry] of col.handle.entries()) {
+        if (entry.kind === "file" && col.re.test(name)) handles.push([name, entry]);
+      }
+    } catch (_) {
+      showToast("Could not read the folder.");
+      renderHint(true);
+      return;
+    }
+    handles.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+
+    searchInfo.textContent = handles.length ? "indexing…" : "";
+    const records = [];
+    const docFreq = new Map();
+
+    for (const [name, entry] of handles) {
+      let text = "";
+      try { text = await col.read(await entry.getFile()); } catch (_) {}
+      // index the filename strongly by repeating its tokens
+      const nameTokens = tokenize(name.replace(/\.[^.]+$/, ""));
+      const tokens = [...nameTokens, ...nameTokens, ...nameTokens, ...tokenize(text)];
+      const tf = new Map();
+      for (const t of tokens) tf.set(t, (tf.get(t) || 0) + 1);
+      for (const t of tf.keys()) docFreq.set(t, (docFreq.get(t) || 0) + 1);
+      records.push({ name, text, tf, len: tokens.length, handle: entry });
+    }
+    col.records = records;
+    col.docFreq = docFreq;
+    col.loaded = true;
+    if (active === col) applySearch();
+  }
+
+  /* ---------- TF-IDF cosine similarity search ---------- */
+  function idf(term) {
+    const N = active.records.length || 1;
+    return Math.log(1 + N / ((active.docFreq.get(term) || 0) + 1));
+  }
+  function docVector(rec) {
+    const v = new Map();
+    let norm = 0;
+    for (const [t, f] of rec.tf) {
+      const w = (1 + Math.log(f)) * idf(t);
+      v.set(t, w);
+      norm += w * w;
+    }
+    return { v, norm: Math.sqrt(norm) || 1 };
+  }
+  function rankByQuery(query) {
+    const qTokens = tokenize(query);
+    if (!qTokens.length) return null;
+    const qtf = new Map();
+    for (const t of qTokens) qtf.set(t, (qtf.get(t) || 0) + 1);
+
+    const qv = new Map();
+    let qnorm = 0;
+    for (const [t, f] of qtf) {
+      const w = (1 + Math.log(f)) * idf(t);
+      qv.set(t, w);
+      qnorm += w * w;
+    }
+    qnorm = Math.sqrt(qnorm) || 1;
+
+    const results = [];
+    for (const rec of active.records) {
+      const { v, norm } = docVector(rec);
+      let dot = 0;
+      for (const [t, qw] of qv) if (v.has(t)) dot += qw * v.get(t);
+      // fuzzy fallback: reward partial / substring matches on the raw text + name
+      let fuzzy = 0;
+      const hay = (rec.name + " " + rec.text).toLowerCase();
+      for (const t of qTokens) if (!v.has(t) && hay.includes(t)) fuzzy += 0.15;
+      const score = dot / (qnorm * norm) + fuzzy;
+      if (score > 0.0001) results.push({ rec, score, qTokens });
+    }
+    results.sort((a, b) => b.score - a.score);
+    return results;
+  }
+
+  function makeSnippet(rec, qTokens) {
+    const text = rec.text || "";
+    const lower = text.toLowerCase();
+    let idx = -1;
+    for (const t of qTokens) { const p = lower.indexOf(t); if (p !== -1 && (idx === -1 || p < idx)) idx = p; }
+    if (idx === -1) return text.slice(0, 140);
+    const start = Math.max(0, idx - 40);
+    return (start > 0 ? "…" : "") + text.slice(start, start + 160) + (start + 160 < text.length ? "…" : "");
+  }
+
+  // Every occurrence of any query term, in document order, with a context snippet.
+  function findMatches(text, qTokens) {
+    if (!qTokens || !qTokens.length || !text) return [];
+    const esc = qTokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const re = new RegExp("(" + esc.join("|") + ")", "gi");
+    const out = [];
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const end = m.index + m[0].length;
+      const s = Math.max(0, m.index - 45);
+      const snippet = (s > 0 ? "…" : "") + text.slice(s, end + 65) + (end + 65 < text.length ? "…" : "");
+      out.push({ index: m.index, snippet });
+      if (m.index === re.lastIndex) re.lastIndex++;
+      if (out.length >= 500) break;
+    }
+    return out;
+  }
+
+  /* ---------- render ---------- */
+  function clearList() { listEl.innerHTML = ""; }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+  function highlight(text, qTokens) {
+    let out = escapeHtml(text);
+    for (const t of [...new Set(qTokens)].sort((a, b) => b.length - a.length)) {
+      const re = new RegExp("(" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+      out = out.replace(re, "<mark>$1</mark>");
+    }
+    return out;
+  }
+
+  /* ---------- in-page viewer with "jump to match" ---------- */
+  // A self-contained script (runs inside the opened tab) that finds the first
+  // occurrence of any search term, highlights it, and scrolls it into view.
+  function highlightScript(query, startIndex) {
+    const terms = tokenize(query);
+    if (!terms.length) return "";
+    return '<scr' + 'ipt>(function(){' +
+      'var TERMS=' + JSON.stringify(terms) + ',START=' + (startIndex || 0) + ';' +
+      'function esc(s){return s.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\\\$&");}' +
+      'var re=new RegExp("("+TERMS.map(esc).join("|")+")","gi");' +
+      'function highlightAll(){' +
+      'var nodes=[],w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null),n;' +
+      'while(n=w.nextNode()){var p=n.parentNode;if(!p)continue;var tn=p.nodeName;' +
+      'if(tn==="SCRIPT"||tn==="STYLE"||tn==="NOSCRIPT"||tn==="MARK")continue;' +
+      're.lastIndex=0;if(re.test(n.nodeValue))nodes.push(n);}' +
+      'var marks=[];' +
+      'for(var i=0;i<nodes.length;i++){var node=nodes[i],t=node.nodeValue,frag=document.createDocumentFragment(),last=0,mm;re.lastIndex=0;' +
+      'while((mm=re.exec(t))!==null){if(mm.index>last)frag.appendChild(document.createTextNode(t.slice(last,mm.index)));' +
+      'var mk=document.createElement("mark");mk.className="__rec_hit";mk.textContent=mm[0];' +
+      'mk.style.cssText="background:#ffe066;color:#000;border-radius:2px;padding:0 .1em;scroll-margin-top:45vh;";' +
+      'frag.appendChild(mk);marks.push(mk);last=mm.index+mm[0].length;if(mm.index===re.lastIndex)re.lastIndex++;}' +
+      'if(last<t.length)frag.appendChild(document.createTextNode(t.slice(last)));' +
+      'node.parentNode.replaceChild(frag,node);}' +
+      'return marks;}' +
+      'function run(){var marks=highlightAll();if(!marks.length)return;' +
+      'var cur=Math.max(0,Math.min(START,marks.length-1));' +
+      'var bar=document.createElement("div");' +
+      'bar.style.cssText="position:fixed;top:12px;right:12px;z-index:2147483647;display:flex;gap:8px;align-items:center;background:#1f2430;color:#fff;padding:6px 10px;border-radius:999px;font:13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.35)";' +
+      'function btn(t){var b=document.createElement("button");b.textContent=t;b.style.cssText="border:none;background:#3a4150;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font:16px system-ui;line-height:1";return b;}' +
+      'var prev=btn("\\u2039"),next=btn("\\u203A"),label=document.createElement("span");' +
+      'bar.appendChild(prev);bar.appendChild(label);bar.appendChild(next);document.body.appendChild(bar);' +
+      'function focus(i){marks.forEach(function(m,j){var on=j===i;m.style.background=on?"#ff9800":"#ffe066";m.style.boxShadow=on?"0 0 0 3px rgba(255,152,0,.45)":"none";});' +
+      'label.textContent=(i+1)+" / "+marks.length;marks[i].scrollIntoView({block:"center",behavior:"smooth"});}' +
+      'prev.onclick=function(){cur=(cur-1+marks.length)%marks.length;focus(cur);};' +
+      'next.onclick=function(){cur=(cur+1)%marks.length;focus(cur);};' +
+      'addEventListener("keydown",function(e){if(e.key==="Enter"||e.key==="ArrowDown"){e.preventDefault();next.onclick();}else if(e.key==="ArrowUp"){e.preventDefault();prev.onclick();}});' +
+      'focus(cur);}' +
+      'if(document.readyState==="loading")addEventListener("DOMContentLoaded",function(){setTimeout(run,60);});' +
+      'else setTimeout(run,60);' +
+      '})();</scr' + 'ipt>';
+  }
+
+  // Word docs / text files are rendered onto a document-style "page".
+  function docViewerPage(title, bodyHtml, query, preformatted, startIndex) {
+    const dark = root.getAttribute("data-theme") === "dark";
+    const deskBg = dark ? "#1b1f27" : "#e9ebee";
+    const pageBg = dark ? "#22272f" : "#ffffff";
+    const fg = dark ? "#e8eaf0" : "#202124";
+    const rule = dark ? "#3a424e" : "#d7dadf";
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>' + escapeHtml(title) + '</title><style>' +
+      'html,body{margin:0;background:' + deskBg + ';color:' + fg + ';}' +
+      'body{font-family:Calibri,"Segoe UI",system-ui,sans-serif;line-height:1.5;' +
+      'padding:32px 16px 64px;}' +
+      '.page{background:' + pageBg + ';max-width:8.5in;margin:0 auto;padding:1in;' +
+      'box-shadow:0 1px 4px rgba(0,0,0,.18),0 12px 32px rgba(0,0,0,.12);border-radius:2px;}' +
+      '.page h1{font-size:1.9rem;font-weight:600;margin:.2em 0 .4em;}' +
+      '.page h2{font-size:1.5rem;font-weight:600;margin:1em 0 .4em;}' +
+      '.page h3{font-size:1.25rem;font-weight:600;margin:1em 0 .35em;}' +
+      '.page h4,.page h5,.page h6{font-weight:600;margin:1em 0 .3em;}' +
+      '.page p{margin:0 0 .7em;}' +
+      '.page ul{margin:.3em 0 .8em;padding-left:1.4em;}' +
+      '.page li{margin:.2em 0;}' +
+      '.page table{border-collapse:collapse;margin:.6em 0;width:auto;}' +
+      '.page td{border:1px solid ' + rule + ';padding:5px 9px;vertical-align:top;}' +
+      '.page a{color:#1a56db;}' +
+      (preformatted ? '.page pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;margin:0;}' : '') +
+      '@media print{body{background:#fff;padding:0;}.page{box-shadow:none;max-width:none;}}' +
+      '</style></head><body><article class="page">' + bodyHtml + '</article>' +
+      highlightScript(query, startIndex) + '</body></html>';
+  }
+
+  // For HTML records we keep the original document, but inject a <base> so its
+  // relative assets resolve, plus the jump-to-match highlighter.
+  function injectIntoHtml(src, query, startIndex) {
+    const base = '<base href="' + new URL(active.dir + "/", location.href).href + '">';
+    const script = highlightScript(query, startIndex);
+    if (/<head[^>]*>/i.test(src)) src = src.replace(/<head[^>]*>/i, (m) => m + base);
+    else if (/<html[^>]*>/i.test(src)) src = src.replace(/<html[^>]*>/i, (m) => m + "<head>" + base + "</head>");
+    else src = base + src;
+    if (/<\/body>/i.test(src)) src = src.replace(/<\/body>/i, script + "</body>");
+    else src += script;
+    return src;
+  }
+
+  function openRecordView(rec, query, occ) {
+    const win = window.open("", "_blank");
+    if (!win) { showToast("Allow pop-ups to open this record."); return; }
+    win.document.write('<!doctype html><meta charset="utf-8">' +
+      '<body style="font:16px system-ui,sans-serif;padding:2rem;color:#777">Opening ' +
+      escapeHtml(rec.name) + '…</body>');
+    win.document.close();
+    (async () => {
+      let html;
+      try {
+        const file = await rec.handle.getFile();
+        if (active.key === "docx") {
+          const xml = await docxXml(await file.arrayBuffer());
+          html = docViewerPage(rec.name, (xml && docxXmlToHtml(xml)) || "<p><em>No content found.</em></p>", query, false, occ);
+        } else if (active.key === "excel") {
+          if (/\.csv$/i.test(rec.name)) {
+            const raw = await file.text();
+            const grid = csvToGrid(raw);
+            html = grid
+              ? docViewerPage(rec.name, sheetsToHtml([{ name: "", grid }]), query, false, occ)
+              : docViewerPage(rec.name, "<pre>" + escapeHtml(raw) + "</pre>", query, true, occ);
+          } else {
+            const sheets = await xlsxToSheets(await file.arrayBuffer());
+            html = docViewerPage(rec.name, sheetsToHtml(sheets), query, false, occ);
+          }
+        } else if (active.key === "html") {
+          html = injectIntoHtml(await file.text(), query, occ);
+        } else {
+          html = docViewerPage(rec.name, "<pre>" + escapeHtml(await file.text()) + "</pre>", query, true, occ);
+        }
+      } catch (_) {
+        html = docViewerPage(rec.name, "<p><em>Could not open this record.</em></p>", "");
+      }
+      try {
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.document.title = rec.name;
+      } catch (_) { /* window may have been closed */ }
+    })();
+  }
+
+  function applySearch() {
+    const query = searchInput.value.trim();
+    const records = active.records;
+    countPill.textContent = records.length + (records.length === 1 ? " file" : " files");
+
+    if (!records.length) {
+      clearList();
+      searchInfo.textContent = "";
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "No files found in the " + active.dir + " folder yet.";
+      listEl.appendChild(li);
+      return;
+    }
+
+    if (!query) {
+      searchInfo.textContent = "";
+      renderResults(records.map(rec => ({ rec, score: null, qTokens: [] })));
+      return;
+    }
+
+    const ranked = rankByQuery(query) || [];
+    const qTokens = tokenize(query);
+    let totalOcc = 0;
+    for (const r of ranked) totalOcc += findMatches(r.rec.text, qTokens).length;
+    searchInfo.textContent = ranked.length + (ranked.length === 1 ? " file" : " files") +
+      (totalOcc ? " \u00b7 " + totalOcc + " match" + (totalOcc === 1 ? "" : "es") : "");
+    renderResults(ranked);
+  }
+
+  function renderResults(items) {
+    clearList();
+    if (!items.length) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "No records match your search.";
+      listEl.appendChild(li);
+      return;
+    }
+    const MAX_OCC = 40;
+    for (const { rec, score, qTokens } of items) {
+      const name = rec.name;
+      const q = (qTokens && qTokens.length) ? searchInput.value.trim() : "";
+      const matches = q ? findMatches(rec.text, qTokens) : [];
+
+      const li = document.createElement("li");
+      li.style.flexDirection = "column";
+      li.style.alignItems = "stretch";
+
+      const top = document.createElement("div");
+      top.style.display = "flex";
+      top.style.alignItems = "center";
+      top.style.gap = ".75rem";
+
+      const a = document.createElement("a");
+      a.className = "file-link";
+      a.href = active.dir + "/" + encodeURIComponent(name);
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.innerHTML = '<span class="doc-ico" aria-hidden="true">▤</span>';
+      a.title = q ? "Open (jump to first match)" : "Open record";
+      a.addEventListener("click", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        if (active.key === "docx" || active.key === "excel" || q) { e.preventDefault(); openRecordView(rec, q, 0); }
+      });
+
+      const meta = document.createElement("span");
+      meta.className = "file-meta";
+      const nameEl = document.createElement("span");
+      nameEl.className = "name";
+      nameEl.innerHTML = q ? highlight(name, qTokens) : escapeHtml(name);
+      meta.appendChild(nameEl);
+      if (q && !matches.length) {
+        const snip = document.createElement("span");
+        snip.className = "snippet";
+        snip.textContent = "Matched in the file name.";
+        meta.appendChild(snip);
+      }
+      a.appendChild(meta);
+
+      const right = document.createElement("div");
+      right.style.display = "flex";
+      right.style.alignItems = "center";
+      right.style.gap = ".6rem";
+      right.style.flex = "none";
+
+      if (matches.length) {
+        const mc = document.createElement("span");
+        mc.className = "match-count";
+        mc.title = "occurrences in this file";
+        mc.textContent = matches.length + "\u00d7";
+        right.appendChild(mc);
+      }
+      if (score != null) {
+        const pill = document.createElement("span");
+        pill.className = "score-pill";
+        pill.title = "relevance similarity";
+        pill.textContent = Math.round(Math.min(1, score) * 100) + "%";
+        right.appendChild(pill);
+      }
+
+      const go = document.createElement("button");
+      go.className = "go-btn";
+      go.textContent = "Go";
+      go.title = "Open this file's folder (copies the path for Finder / Explorer)";
+      go.setAttribute("aria-label", "Open folder location of " + name);
+      go.addEventListener("click", () => revealRecord(name));
+      right.appendChild(go);
+
+      if (active.editable) {
+        const edit = document.createElement("button");
+        edit.className = "edit-btn";
+        edit.textContent = "Edit";
+        edit.setAttribute("aria-label", "Edit " + name);
+        edit.addEventListener("click", () => openEditor(rec));
+        right.appendChild(edit);
+      }
+
+      const del = document.createElement("button");
+      del.className = "del-btn";
+      del.textContent = "Delete";
+      del.setAttribute("aria-label", "Delete " + name);
+      del.addEventListener("click", () => openDeleteDialog(name));
+      right.appendChild(del);
+
+      top.appendChild(a);
+      top.appendChild(right);
+      li.appendChild(top);
+
+      if (matches.length) {
+        const box = document.createElement("div");
+        box.className = "matches";
+        const shown = Math.min(matches.length, MAX_OCC);
+        for (let i = 0; i < shown; i++) {
+          const mi = document.createElement("button");
+          mi.type = "button";
+          mi.className = "match-item";
+          mi.title = "Open and jump to occurrence " + (i + 1);
+          mi.innerHTML = '<span class="match-no">' + (i + 1) + '</span>' +
+            highlight(matches[i].snippet, qTokens);
+          const idx = i;
+          mi.addEventListener("click", () => openRecordView(rec, q, idx));
+          box.appendChild(mi);
+        }
+        if (matches.length > shown) {
+          const more = document.createElement("div");
+          more.className = "match-more";
+          more.textContent = "+" + (matches.length - shown) +
+            " more — open the file and use the \u2039 \u203A navigator";
+          box.appendChild(more);
+        }
+        li.appendChild(box);
+      }
+
+      listEl.appendChild(li);
+    }
+  }
+
+  function renderHint(needsPermission) {
+    clearList();
+    countPill.textContent = "—";
+    const li = document.createElement("li");
+    li.className = "hint";
+    if (needsPermission && active.handle) {
+      const fname = active.handle.name || active.dir;
+      const msg = document.createElement("div");
+      msg.innerHTML = 'Remembered the <code>' + escapeHtml(fname) + '</code> folder for the <strong>' +
+        active.label + '</strong> tab. Browsers ask permission again after restart — ' +
+        'reconnect once to load your records.';
+      const btn = document.createElement("button");
+      btn.className = "btn-accent";
+      btn.style.marginTop = ".8rem";
+      btn.textContent = "Reconnect to " + fname;
+      btn.addEventListener("click", reconnectActive);
+      li.appendChild(msg);
+      li.appendChild(btn);
+    } else {
+      li.innerHTML = 'Click <strong>Open ' + active.dir + ' folder</strong> and choose the <code>' +
+        active.dir + '</code> folder next to this page. Your choice is remembered for next time.';
+    }
+    listEl.appendChild(li);
+  }
+
+  function renderUnsupported() {
+    clearList();
+    countPill.textContent = "—";
+    const li = document.createElement("li");
+    li.className = "hint";
+    li.innerHTML = 'This browser cannot list/delete files. Please open <code>record.html</code> in ' +
+                   '<strong>Chrome</strong> or <strong>Edge</strong> for full functionality.';
+    listEl.appendChild(li);
+    pickBtn.disabled = true;
+  }
+
+  /* ---------- delete flow (double-check) ---------- */
+  let pendingName = null;
+
+  function openDeleteDialog(name) {
+    pendingName = name;
+    delTarget.textContent = name;
+    delInput.value = "";
+    delConfirm.disabled = true;
+    if (typeof delDialog.showModal === "function") delDialog.showModal();
+    setTimeout(() => delInput.focus(), 30);
+  }
+
+  delInput.addEventListener("input", () => {
+    delConfirm.disabled = delInput.value.trim().toLowerCase() !== "delete";
+  });
+
+  delCancel.addEventListener("click", () => { delDialog.close(); pendingName = null; });
+
+  delForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (delInput.value.trim().toLowerCase() !== "delete" || !pendingName) return;
+    const name = pendingName;
+    delDialog.close();
+    pendingName = null;
+    try {
+      if (!active.handle || !(await ensurePermission(active.handle, true))) {
+        showToast("Write permission denied.");
+        return;
+      }
+      await active.handle.removeEntry(name);
+      showToast("Deleted: " + name);
+      active.loaded = false;
+      await listFiles();
+    } catch (_) {
+      showToast("Could not delete " + name);
+    }
+  });
+
+  /* ---------- "Go" — reveal a record's location ----------
+     A browser can't open Finder/Explorer on its own, so we first ping the local
+     reveal-helper (run: python3 reveal-helper.py) which reveals & selects the
+     file natively. If the helper isn't running we fall back to opening the
+     folder listing in a new tab and copying the path. */
+  const HELPER = "http://127.0.0.1:47615";
+
+  function osInfo() {
+    const ua = navigator.userAgent || "";
+    const plat = (navigator.userAgentData && navigator.userAgentData.platform) ||
+                 navigator.platform || "";
+    const isWin = /win/i.test(plat) || /Windows/i.test(ua);
+    const isMac = /mac/i.test(plat) || /Macintosh|Mac OS/i.test(ua);
+    return { isWin, isMac };
+  }
+  function fileUrlToOsPath(url, isWin) {
+    let p = url.replace(/^file:\/\//, "");
+    try { p = decodeURIComponent(p); } catch (_) {}
+    if (isWin) p = p.replace(/^\/+/, "").replace(/\//g, "\\");
+    return p;
+  }
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) { /* fall through */ }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (_) { return false; }
+  }
+  async function revealRecord(name) {
+    if (location.protocol !== "file:") {
+      showToast("Open record.html directly from disk (file://) to use Go.");
+      return;
+    }
+    const folderName = (active.handle && active.handle.name) || active.dir;
+    const dirUrl = location.href.replace(/[^/]*$/, "") + encodeURIComponent(folderName) + "/";
+    const { isWin, isMac } = osInfo();
+    const filePath = fileUrlToOsPath(dirUrl + encodeURIComponent(name), isWin);
+
+    // 1) Preferred: let the local helper reveal it in Finder / Explorer.
+    try {
+      const opts = (typeof AbortSignal !== "undefined" && AbortSignal.timeout)
+        ? { signal: AbortSignal.timeout(1500) } : {};
+      const res = await fetch(HELPER + "/reveal?path=" + encodeURIComponent(filePath), opts);
+      if (res.ok) {
+        showToast(isMac ? "Revealing in Finder\u2026"
+          : isWin ? "Revealing in File Explorer\u2026" : "Opening file manager\u2026");
+        return;
+      }
+    } catch (_) { /* helper not running — fall back below */ }
+
+    // 2) Fallback: open the folder listing in a tab + copy the path.
+    const folderPath = fileUrlToOsPath(dirUrl, isWin);
+    window.open(dirUrl, "_blank", "noopener");
+    const copied = await copyText(folderPath);
+    const tip = " (run reveal-helper.py for 1-click Finder/Explorer).";
+    if (!copied) { showToast("Path: " + folderPath); return; }
+    if (isMac) showToast("Path copied \u2014 Finder: \u2318\u21e7G then paste" + tip);
+    else if (isWin) showToast("Path copied \u2014 paste into Explorer's address bar" + tip);
+    else showToast("Path copied to clipboard" + tip);
+  }
+
+  /* ---------- reveal-helper status (above the tabs) ---------- */
+  let helperOnline = false;
+
+  async function pingHelper() {
+    try {
+      const opts = (typeof AbortSignal !== "undefined" && AbortSignal.timeout)
+        ? { signal: AbortSignal.timeout(1200) } : {};
+      const res = await fetch(HELPER + "/ping", opts);
+      return res.ok;
+    } catch (_) { return false; }
+  }
+
+  async function refreshHelper(announce) {
+    helperStateText.textContent = "checking\u2026";
+    helperDot.className = "dot dot-wait";
+    helperOnline = await pingHelper();
+    helperDot.className = "dot " + (helperOnline ? "dot-on" : "dot-off");
+    helperStateText.textContent = helperOnline ? "connected" : "not running";
+    helperBtn.textContent = helperOnline ? "Recheck" : "How to start";
+    if (announce) showToast(helperOnline ? "Reveal helper connected." : "Reveal helper isn't running.");
+  }
+
+  function startCommand() {
+    const isWin = osInfo().isWin;
+    const dir = fileUrlToOsPath(location.href.replace(/[^/]*$/, ""), isWin);
+    return isWin
+      ? 'cd /d "' + dir + '" && python reveal-helper.py'
+      : 'cd "' + dir + '" && python3 reveal-helper.py';
+  }
+
+  helperBtn.addEventListener("click", async () => {
+    await refreshHelper(true);
+    if (!helperOnline) {
+      helperCmd.textContent = startCommand();
+      if (typeof helperDialog.showModal === "function") helperDialog.showModal();
+    }
+  });
+  helperCmdCopy.addEventListener("click", async () => {
+    const ok = await copyText(startCommand());
+    showToast(ok ? "Start command copied." : "Could not copy the command.");
+  });
+  helperClose.addEventListener("click", () => { helperDialog.close(); refreshHelper(false); });
+
+  // When the user returns to this tab (e.g. after starting the helper), recheck.
+  window.addEventListener("focus", () => { if (!helperOnline) refreshHelper(false); });
+
+  /* ---------- edit flow (save back to disk) ---------- */
+  let editRec = null;
+
+  async function openEditor(rec) {
+    if (!active.editable) {
+      showToast("Editing is only available for text-based files.");
+      return;
+    }
+    if (!supportsFS) { renderUnsupported(); return; }
+    let text;
+    try {
+      text = await (await rec.handle.getFile()).text();
+    } catch (_) {
+      showToast("Could not open " + rec.name + " for editing.");
+      return;
+    }
+    editRec = rec;
+    editTitle.textContent = rec.name;
+    editArea.value = text;
+    if (typeof editDialog.showModal === "function") editDialog.showModal();
+    setTimeout(() => { editArea.focus(); editArea.setSelectionRange(0, 0); editArea.scrollTop = 0; }, 30);
+  }
+
+  editCancel.addEventListener("click", () => { editDialog.close(); editRec = null; });
+
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!editRec) return;
+    const rec = editRec;
+    try {
+      if (!active.handle || !(await ensurePermission(active.handle, true))) {
+        showToast("Write permission denied.");
+        return;
+      }
+      const writable = await rec.handle.createWritable();
+      await writable.write(editArea.value);
+      await writable.close();
+      showToast("Saved: " + rec.name);
+      editDialog.close();
+      editRec = null;
+      active.loaded = false;     // re-index so search reflects the edit
+      await listFiles();
+    } catch (_) {
+      showToast("Could not save " + rec.name + ".");
+    }
+  });
+
+  /* ---------- wire up ---------- */
+  let searchTimer;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applySearch, 120);
+  });
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { searchInput.value = ""; applySearch(); }
+  });
+
+  pickBtn.addEventListener("click", pickFolder);
+  refreshBtn.addEventListener("click", () => {
+    if (active.handle) { active.loaded = false; listFiles(); } else pickFolder();
+  });
+
+  tabEls.forEach(t => {
+    t.addEventListener("click", () => switchTab(t.dataset.key));
+    t.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        const i = tabEls.indexOf(t);
+        const next = tabEls[(i + (e.key === "ArrowRight" ? 1 : tabEls.length - 1)) % tabEls.length];
+        next.focus();
+        switchTab(next.dataset.key);
+      }
+    });
+  });
+
+  updateChrome();
+  tryRestore();
+  refreshHelper(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Personal records / notes — kept locally, never pushed
+html/
+docx/
+excel/
+text/
+
+# macOS
+.DS_Store
+**/.DS_Store
