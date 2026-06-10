@@ -17,8 +17,19 @@ Safety: only paths inside this RECORD folder can be revealed, and it only ever
 import os
 import platform
 import subprocess
+import sys
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+# On Windows the console defaults to a legacy code page (e.g. cp1252) that
+# cannot encode non-ASCII characters. The RECORD folder name contains emoji,
+# so printing its path would crash with UnicodeEncodeError. Force UTF-8 output
+# (and never crash on a stray character) on every platform.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 PORT = 47615
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -29,7 +40,10 @@ def reveal(path):
     if system == "Darwin":
         subprocess.run(["open", "-R", path], check=False)
     elif system == "Windows":
-        subprocess.run(["explorer", "/select,", os.path.normpath(path)], check=False)
+        # Use the full path to explorer.exe: the Microsoft Store build of Python
+        # can't resolve a bare "explorer" on its search path (raises WinError 2).
+        explorer = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "explorer.exe")
+        subprocess.run([explorer, "/select,", os.path.normpath(path)], check=False)
     else:
         target = path if os.path.isdir(path) else os.path.dirname(path)
         subprocess.run(["xdg-open", target], check=False)
