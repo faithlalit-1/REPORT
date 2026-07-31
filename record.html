@@ -539,6 +539,8 @@
             aria-selected="true" data-key="html">HTML</button>
     <button class="tab" id="tab-text" role="tab" aria-controls="indexList"
             aria-selected="false" data-key="text">Text</button>
+    <button class="tab" id="tab-sql" role="tab" aria-controls="indexList"
+            aria-selected="false" data-key="sql">SQL</button>
     <button class="tab" id="tab-docx" role="tab" aria-controls="indexList"
             aria-selected="false" data-key="docx">Word</button>
     <button class="tab" id="tab-excel" role="tab" aria-controls="indexList"
@@ -697,6 +699,14 @@
       key: "text", label: "Text", dir: "text",
       re: /\.(txt|md|markdown|log|csv|json|text|sql|xml|yml|yaml)$/i,
       read: async (f) => plainText(await f.text()), handleKey: "textDir",
+      editable: true,
+      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      selected: new Set()
+    },
+    sql: {
+      key: "sql", label: "SQL", dir: "sql",
+      re: /\.sql$/i,
+      read: async (f) => plainText(await f.text()), handleKey: "sqlDir",
       editable: true,
       handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
       selected: new Set()
