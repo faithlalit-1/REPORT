@@ -35,11 +35,12 @@
   .explorer{position:relative;background:linear-gradient(145deg,rgba(34,40,67,.95),rgba(26,31,54,.95));border:1px solid var(--line);border-radius:18px;padding:22px;margin:0 0 26px;box-shadow:0 18px 45px rgba(4,7,20,.28);}
   .explorer-title{margin:0 0 4px;font-size:1.18rem;}
   .explorer-subtitle{margin:0 0 18px;color:var(--muted);font-size:.9rem;}
-  .explorer-controls{display:grid;grid-template-columns:minmax(140px,.6fr) minmax(220px,1.25fr) minmax(165px,.7fr);gap:14px;align-items:end;}
+  .explorer-controls{display:grid;grid-template-columns:minmax(130px,.55fr) minmax(210px,1fr) minmax(210px,1fr) minmax(165px,.7fr);gap:14px;align-items:end;}
   .field{position:relative;}
   .field label{display:block;margin:0 0 7px;color:var(--muted);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.55px;}
-  .field select,.combo-input{width:100%;height:45px;padding:10px 42px 10px 13px;border:1px solid var(--line);border-radius:10px;background:#12162a;color:var(--text);font:inherit;outline:none;}
-  .field select:focus,.combo-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.16);}
+  .field select,.combo-input,.description-input{width:100%;height:45px;padding:10px 42px 10px 13px;border:1px solid var(--line);border-radius:10px;background:#12162a;color:var(--text);font:inherit;outline:none;}
+  .description-input{padding-right:13px;}
+  .field select:focus,.combo-input:focus,.description-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.16);}
   .combo-toggle{position:absolute;right:4px;bottom:4px;width:37px;height:37px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;}
   .combo-toggle:hover{background:var(--card2);color:var(--text);}
   .combo-list{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;max-height:290px;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--line);border-radius:12px;background:#12162a;box-shadow:0 18px 35px rgba(0,0,0,.38);}
@@ -83,6 +84,7 @@
   ul.items li{cursor:pointer;}
   .item-updated{display:block;margin-top:3px;color:var(--muted);font-size:.72rem;}
   ul.items li.selected{background:rgba(91,140,255,.14);border-color:var(--accent);}
+  @media(max-width:900px){.explorer-controls{grid-template-columns:1fr 1fr;}}
   @media(max-width:680px){.explorer-controls,.detail-grid{grid-template-columns:1fr;}.spec-list{columns:1;}.explorer{padding:17px;}}
 </style>
 </head>
@@ -94,7 +96,7 @@
   <div class="wrap">
     <section class="explorer" aria-labelledby="explorer-title">
       <h2 id="explorer-title" class="explorer-title">Component Explorer</h2>
-      <p class="explorer-subtitle">Choose a category, sort by update date, then search or select a component to see its explanation, common uses, working principle and example projects.</p>
+      <p class="explorer-subtitle">Choose a category, sort by update date, then search by component name or description to see its explanation, common uses, working principle and example projects.</p>
       <div class="explorer-controls">
         <div class="field">
           <label for="category-filter">Category</label>
@@ -107,6 +109,10 @@
           <input id="component-search" class="combo-input" type="search" placeholder="Search or choose a component..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="component-options">
           <button id="combo-toggle" class="combo-toggle" type="button" aria-label="Show component options" tabindex="-1">&#9662;</button>
           <ul id="component-options" class="combo-list" role="listbox" hidden></ul>
+        </div>
+        <div class="field" id="description-field">
+          <label for="description-search">Description</label>
+          <input id="description-search" class="description-input" type="search" placeholder="e.g. lidar, vibration..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="component-options" aria-label="Search components by description">
         </div>
         <div class="field">
           <label for="sort-order">Sort</label>
@@ -350,6 +356,9 @@
       const categorySelect=document.getElementById('category-filter');
       const sortSelect=document.getElementById('sort-order');
       const search=document.getElementById('component-search');
+      const descriptionSearch=document.getElementById('description-search');
+      const componentCombo=document.getElementById('component-combo');
+      const descriptionField=document.getElementById('description-field');
       const toggle=document.getElementById('combo-toggle');
       const options=document.getElementById('component-options');
       const detail=document.getElementById('component-detail');
@@ -848,6 +857,7 @@
         },
         'VL53L0X':{
           explanation:'The VL53L0X is a Time-of-Flight laser-ranging module that measures absolute distance up to about 2 m and reports readings over I2C. It integrates a Class 1 invisible 940 nm emitter, a single-photon detector array and on-chip ranging processing.',
+          keywords:['LiDAR','laser distance sensor','rangefinder'],
           uses:['Short-range obstacle and proximity detection','Robot wall following and navigation','Liquid-level and bin-fill sensing','Touchless controls and simple gesture detection'],
           specs:['Technology: single-zone Time-of-Flight ranging','Maximum specified range: up to 2 m','Emitter: invisible 940 nm VCSEL, Class 1','Interface: I2C with programmable address','Control pins: XSHUT/reset and interrupt GPIO','Sensor package: 4.4 x 2.4 x 1.0 mm; breakout-board size and supply range vary'],
           principle:'The module emits short pulses of invisible infrared light and measures the photons returning from the target. Its FlightSense processing derives distance from the light travel time, making readings less dependent on target reflectance than simple reflected-intensity sensors.',
@@ -932,6 +942,13 @@
         return null;
       }
 
+      function flattenSearchText(value){
+        if(typeof value==='string')return value;
+        if(Array.isArray(value))return value.map(flattenSearchText).join(' ');
+        if(value&&typeof value==='object')return Object.keys(value).map(function(key){return flattenSearchText(value[key]);}).join(' ');
+        return '';
+      }
+
       const categoryUses={
         'Transistor':['Switching electronic loads','Amplifying current or signals','Driving LEDs, relays and other circuits'],
         'Diode':['Rectifying AC to DC','Reverse-polarity protection','Clamping and steering electrical signals'],
@@ -966,7 +983,8 @@
         const recorded=cleanText(parts.join(' - '));
         return {
           name:name,
-          description:recorded||('This catalogue lists '+name+' under '+category+'. No additional specification note has been recorded yet.')
+          description:recorded||('This catalogue lists '+name+' under '+category+'. No additional specification note has been recorded yet.'),
+          recordedDescription:recorded
         };
       }
 
@@ -981,6 +999,7 @@
         section.querySelectorAll('ul.items li').forEach(function(li,index){
           const raw=cleanText(li.textContent);
           const parsed=splitItem(raw,category);
+          const itemDetails=getDetails(parsed.name);
           const updated=li.dataset.updated||gitBaselineDate;
           const item={
             id:section.id+'-'+index,
@@ -988,6 +1007,7 @@
             category:category,
             name:parsed.name,
             description:parsed.description,
+            descriptionSearchText:cleanText(parsed.recordedDescription+' '+flattenSearchText(itemDetails)).toLowerCase(),
             raw:raw,
             updated:updated,
             catalogOrder:components.length,
@@ -1023,16 +1043,30 @@
 
       function matchingComponents(){
         const term=search.value.toLowerCase().trim();
+        const descriptionTerm=descriptionSearch.value.toLowerCase().trim();
         return components.filter(function(item){
           return (!categorySelect.value||item.categoryId===categorySelect.value)&&
-            (!term||(item.name+' '+item.raw+' '+item.category).toLowerCase().includes(term));
+            (!term||(item.name+' '+item.raw+' '+item.category).toLowerCase().includes(term))&&
+            (!descriptionTerm||item.descriptionSearchText.includes(descriptionTerm));
         }).sort(compareComponents);
       }
 
-      function openList(){options.hidden=false;search.setAttribute('aria-expanded','true');}
-      function closeList(){options.hidden=true;search.setAttribute('aria-expanded','false');activeIndex=-1;}
+      function openList(owner){
+        options.hidden=false;
+        search.setAttribute('aria-expanded',String(owner===search));
+        descriptionSearch.setAttribute('aria-expanded',String(owner===descriptionSearch));
+      }
+      function closeList(){
+        options.hidden=true;
+        search.setAttribute('aria-expanded','false');
+        descriptionSearch.setAttribute('aria-expanded','false');
+        activeIndex=-1;
+      }
 
-      function renderOptions(){
+      function renderOptions(owner){
+        owner=owner===descriptionSearch?descriptionSearch:search;
+        const optionHost=owner===descriptionSearch?descriptionField:componentCombo;
+        if(options.parentElement!==optionHost)optionHost.appendChild(options);
         const found=matchingComponents();
         options.innerHTML='';
         activeIndex=-1;
@@ -1073,7 +1107,7 @@
             options.appendChild(option);
           });
         }
-        openList();
+        openList(owner);
       }
 
       function moveActive(direction){
@@ -1233,16 +1267,18 @@
         }
       }
 
-      search.addEventListener('focus',renderOptions);
-      search.addEventListener('input',renderOptions);
+      search.addEventListener('focus',function(){renderOptions(search);});
+      search.addEventListener('input',function(){renderOptions(search);});
+      descriptionSearch.addEventListener('focus',function(){renderOptions(descriptionSearch);});
+      descriptionSearch.addEventListener('input',function(){renderOptions(descriptionSearch);});
       toggle.addEventListener('click',function(){
-        if(options.hidden){renderOptions();search.focus();}
+        if(options.hidden||options.parentElement!==componentCombo){renderOptions(search);search.focus();}
         else closeList();
       });
-      categorySelect.addEventListener('change',function(){search.value='';renderOptions();search.focus();});
-      sortSelect.addEventListener('change',function(){sortCatalogItems();renderOptions();search.focus();});
-      search.addEventListener('keydown',function(event){
-        if(event.key==='ArrowDown'){event.preventDefault();if(options.hidden)renderOptions();moveActive(1);}
+      categorySelect.addEventListener('change',function(){search.value='';renderOptions(search);search.focus();});
+      sortSelect.addEventListener('change',function(){sortCatalogItems();renderOptions(search);search.focus();});
+      function handleSearchKeydown(event){
+        if(event.key==='ArrowDown'){event.preventDefault();if(options.hidden)renderOptions(event.currentTarget);moveActive(1);}
         else if(event.key==='ArrowUp'){event.preventDefault();moveActive(-1);}
         else if(event.key==='Enter'&&activeIndex>=0){
           event.preventDefault();
@@ -1250,8 +1286,12 @@
           const item=components.find(function(component){return component.id===row.dataset.id;});
           if(item)selectItem(item);
         }else if(event.key==='Escape'){closeList();}
+      }
+      search.addEventListener('keydown',handleSearchKeydown);
+      descriptionSearch.addEventListener('keydown',handleSearchKeydown);
+      document.addEventListener('click',function(event){
+        if(!componentCombo.contains(event.target)&&!descriptionField.contains(event.target))closeList();
       });
-      document.addEventListener('click',function(event){if(!document.getElementById('component-combo').contains(event.target))closeList();});
       components.forEach(function(item){
         item.element.addEventListener('click',function(event){
           if(event.target.closest('a'))return;
