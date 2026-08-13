@@ -35,7 +35,7 @@
   .explorer{position:relative;background:linear-gradient(145deg,rgba(34,40,67,.95),rgba(26,31,54,.95));border:1px solid var(--line);border-radius:18px;padding:22px;margin:0 0 26px;box-shadow:0 18px 45px rgba(4,7,20,.28);}
   .explorer-title{margin:0 0 4px;font-size:1.18rem;}
   .explorer-subtitle{margin:0 0 18px;color:var(--muted);font-size:.9rem;}
-  .explorer-controls{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(260px,1.3fr);gap:14px;align-items:end;}
+  .explorer-controls{display:grid;grid-template-columns:minmax(140px,.6fr) minmax(220px,1.25fr) minmax(165px,.7fr);gap:14px;align-items:end;}
   .field{position:relative;}
   .field label{display:block;margin:0 0 7px;color:var(--muted);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.55px;}
   .field select,.combo-input{width:100%;height:45px;padding:10px 42px 10px 13px;border:1px solid var(--line);border-radius:10px;background:#12162a;color:var(--text);font:inherit;outline:none;}
@@ -49,19 +49,24 @@
   .combo-option-main{min-width:0;}
   .combo-option-name{display:block;}
   .combo-option-description{display:block;margin-top:2px;color:var(--muted);font-size:.75rem;line-height:1.35;}
-  .combo-option small{flex:0 0 auto;color:var(--muted);}
+  .combo-option-meta{flex:0 0 auto;color:var(--muted);text-align:right;line-height:1.35;white-space:nowrap;}
+  .combo-option-meta span,.combo-option-meta time{display:block;}
+  .combo-option-meta time{margin-top:3px;font-size:.72rem;}
   .combo-empty{padding:13px;color:var(--muted);text-align:center;}
   .detail-panel{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:rgba(15,18,33,.7);}
   .detail-panel.empty{color:var(--muted);text-align:center;padding:28px 18px;}
   .detail-heading{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
   .detail-heading h2{margin:1px 0 0;font-size:1.25rem;}
   .detail-category{display:inline-block;color:var(--accent);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.65px;}
+  .detail-updated{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;}
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .detail-block{padding:14px;border-radius:11px;background:var(--card);}
   .detail-block h3{margin:0 0 7px;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.55px;}
   .detail-block p{margin:0;}
   .detail-block ul{margin:0;padding-left:19px;}
   .detail-block-wide{grid-column:1/-1;}
+  .spec-list{columns:2;column-gap:30px;}
+  .spec-list li{break-inside:avoid;margin-bottom:4px;}
   .drive-mode-block{border:1px solid rgba(91,140,255,.38);background:linear-gradient(145deg,rgba(31,55,105,.45),var(--card));}
   .drive-mode-block h3{color:#8fb3ff;}
   .drive-mode-block ol,.drive-mode-block ul{margin:6px 0 0;padding-left:21px;}
@@ -76,19 +81,20 @@
   .limitation-sources a{margin-right:14px;}
   .detail-link{display:inline-block;margin-top:12px;}
   ul.items li{cursor:pointer;}
+  .item-updated{display:block;margin-top:3px;color:var(--muted);font-size:.72rem;}
   ul.items li.selected{background:rgba(91,140,255,.14);border-color:var(--accent);}
-  @media(max-width:680px){.explorer-controls,.detail-grid{grid-template-columns:1fr;}.explorer{padding:17px;}}
+  @media(max-width:680px){.explorer-controls,.detail-grid{grid-template-columns:1fr;}.spec-list{columns:1;}.explorer{padding:17px;}}
 </style>
 </head>
 <body>
   <header class="hero">
     <h1>⚙️ Electronic Components Reference</h1>
-    <p>13 categories &middot; 100 components &middot; each with explanation, uses, working principle and example projects</p>
+    <p>14 categories &middot; 104 components &middot; each with explanation, uses, working principle and example projects</p>
   </header>
   <div class="wrap">
     <section class="explorer" aria-labelledby="explorer-title">
       <h2 id="explorer-title" class="explorer-title">Component Explorer</h2>
-      <p class="explorer-subtitle">Choose a category, then search or select a component to see its explanation, common uses, working principle and example projects.</p>
+      <p class="explorer-subtitle">Choose a category, sort by update date, then search or select a component to see its explanation, common uses, working principle and example projects.</p>
       <div class="explorer-controls">
         <div class="field">
           <label for="category-filter">Category</label>
@@ -101,6 +107,14 @@
           <input id="component-search" class="combo-input" type="search" placeholder="Search or choose a component..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="component-options">
           <button id="combo-toggle" class="combo-toggle" type="button" aria-label="Show component options" tabindex="-1">&#9662;</button>
           <ul id="component-options" class="combo-list" role="listbox" hidden></ul>
+        </div>
+        <div class="field">
+          <label for="sort-order">Sort</label>
+          <select id="sort-order">
+            <option value="catalog">Catalog order</option>
+            <option value="date-asc">Date ascending (oldest first)</option>
+            <option value="date-desc">Date descending (newest first)</option>
+          </select>
         </div>
       </div>
       <div id="component-detail" class="detail-panel empty" aria-live="polite">
@@ -121,7 +135,8 @@
       <a href="#optocoupler">💡 Optocoupler <span class="count">1</span></a>
       <a href="#microcontroller-boards">🖥️ Microcontroller Boards <span class="count">12</span></a>
       <a href="#sensors">📡 Sensors <span class="count">11</span></a>
-      <a href="#modules">🧰 Modules <span class="count">35</span></a>
+      <a href="#actuators">🤖 Actuators <span class="count">2</span></a>
+      <a href="#modules">🧰 Modules <span class="count">37</span></a>
     </nav>
 
     <section id="transistor" class="card">
@@ -277,8 +292,16 @@
       </ul>
     </section>
 
+    <section id="actuators" class="card">
+      <h2>🤖 Actuators <span class="badge">2 items</span></h2>
+      <ul class="items">
+          <li data-updated="2026-08-13"><a href="https://www.lcsc.com/datasheet/C96093.pdf" target="_blank" rel="noopener">TMB12A05 5 V Active Buzzer</a> - Electromagnetic continuous-tone sounder</li>
+          <li data-updated="2026-08-13"><a href="https://cdn.sparkfun.com/datasheets/Robotics/B1034.FL45-00-015.pdf" target="_blank" rel="noopener">1034 Coin Vibration Motor (10 x 3.4 mm)</a> - Compact ERM haptic motor</li>
+      </ul>
+    </section>
+
     <section id="modules" class="card">
-      <h2>🧰 Modules <span class="badge">35 items</span></h2>
+      <h2>🧰 Modules <span class="badge">37 items</span></h2>
       <ul class="items">
           <li>SIM800L - SIm message and calling 2g</li>
           <li>PAM8403 - Audio amplifier</li>
@@ -300,7 +323,9 @@
           <li>LM2003 based servo motor driver</li>
           <li><a href="https://www.ti.com/product/DRV8837" target="_blank" rel="noopener">DRV8837</a> - 0 to 11 V single H-bridge DC motor driver module</li>
           <li><a href="https://www.ti.com/product/DRV8833" target="_blank" rel="noopener">DRV8833</a> - 2.7 to 10.8 V dual H-bridge DC/stepper motor driver module</li>
-          <li><a href="https://www.st.com/en/imaging-and-photonics-solutions/vl53l0x.html" target="_blank" rel="noopener">VL53L0X</a> - Time-of-Flight laser distance sensor module</li>
+          <li data-updated="2026-08-13"><a href="https://www.st.com/en/imaging-and-photonics-solutions/vl53l0x.html" target="_blank" rel="noopener">VL53L0X ToF Laser Distance Sensor</a> - Single-zone infrared laser-ranging module</li>
+          <li data-updated="2026-08-13"><a href="https://www.hlktech.com/en/Goods-246.html" target="_blank" rel="noopener">HLK-LD2420 24 GHz mmWave Presence Radar</a> - Moving and micro-motion human-presence module</li>
+          <li data-updated="2026-08-13"><a href="https://store.arduino.cc/products/microwave-motion-radar" target="_blank" rel="noopener">RCWL-0516 Microwave Motion Sensor Module</a> - Doppler radar sensor switch</li>
           <li>SSD 1306 - 128x64 lcd display</li>
           <li>WTV020M01 - MP3 Audio Module ( Arduino ) →</li>
           <li>1. Operating voltage: DC2.5 ~ 3.6V</li>
@@ -318,16 +343,19 @@
       </ul>
     </section>
 
-    <footer>Compiled component catalogue &middot; click any item link to open its datasheet / product page.</footer>
+    <footer>Compiled component catalogue &middot; update dates derived from Git history &middot; click any item link to open its datasheet / product page.</footer>
   </div>
   <script>
     (function(){
       const categorySelect=document.getElementById('category-filter');
+      const sortSelect=document.getElementById('sort-order');
       const search=document.getElementById('component-search');
       const toggle=document.getElementById('combo-toggle');
       const options=document.getElementById('component-options');
       const detail=document.getElementById('component-detail');
       const sections=Array.from(document.querySelectorAll('section.card'));
+      // The catalogue entered Git on this date; items changed by later diffs override it with data-updated.
+      const gitBaselineDate='2026-08-10';
       let activeIndex=-1;
 
       const sensorDetails={
@@ -821,8 +849,37 @@
         'VL53L0X':{
           explanation:'The VL53L0X is a Time-of-Flight laser-ranging module that measures absolute distance up to about 2 m and reports readings over I2C. It integrates a Class 1 invisible 940 nm emitter, a single-photon detector array and on-chip ranging processing.',
           uses:['Short-range obstacle and proximity detection','Robot wall following and navigation','Liquid-level and bin-fill sensing','Touchless controls and simple gesture detection'],
+          specs:['Technology: single-zone Time-of-Flight ranging','Maximum specified range: up to 2 m','Emitter: invisible 940 nm VCSEL, Class 1','Interface: I2C with programmable address','Control pins: XSHUT/reset and interrupt GPIO','Sensor package: 4.4 x 2.4 x 1.0 mm; breakout-board size and supply range vary'],
           principle:'The module emits short pulses of invisible infrared light and measures the photons returning from the target. Its FlightSense processing derives distance from the light travel time, making readings less dependent on target reflectance than simple reflected-intensity sensors.',
           projects:['ToF obstacle-avoiding robot','Touchless hand-distance controller','Contact-free tank-level monitor']
+        },
+        'HLK-LD2420':{
+          explanation:'The Hi-Link HLK-LD2420 is a configurable 24 GHz FMCW millimetre-wave radar module for detecting moving, micro-moving and nearly stationary people indoors. Unlike a basic motion switch, it can maintain human-presence detection from small body movements and report results through UART or a logic output.',
+          uses:['Room occupancy and presence-aware lighting','Keeping displays or appliances awake while a person is present','Smart-home HVAC and energy control','Indoor access, intercom and security triggers'],
+          specs:['Radar band: 24.00 to 24.25 GHz FMCW','Supply: 3.0 to 3.6 V DC; 3.3 V nominal','Average operating current: about 50 mA','Wall mount: up to 8 m moving / 6 m micro-motion','Ceiling mount radius: up to 5 m moving / 4 m micro-motion','Detection angle: up to +/-60 degrees','Outputs: UART ASCII data and 3.3 V / 0 V GPIO','Size: 20 x 20 mm; operating temperature: -40 to +85 degrees C'],
+          principle:'The module sweeps a continuous 24 GHz signal and compares the transmitted and reflected waves. Its on-board signal processing resolves target distance and very small Doppler changes, then applies a human-sensing algorithm with configurable distance gates, sensitivity and report timing.',
+          projects:['ESP32 room-presence node for Home Assistant','Presence-held automatic desk lighting','Occupied-room HVAC setback controller']
+        },
+        'RCWL-0516':{
+          explanation:'The RCWL-0516 is a low-cost microwave Doppler motion sensor switch and a common alternative to a PIR module. It detects movement rather than true stationary presence, can respond through many non-metallic covers and provides a simple 3.3 V digital motion output.',
+          uses:['Automatic doors, gates and corridor lights','Motion alarms hidden behind plastic enclosures','Wake-up input for Arduino, ESP and other controllers','Occupancy-triggered fans or appliances where movement is expected'],
+          specs:['Supply input: 4 to 28 V DC','Current consumption: 2.8 mA typical, 3 mA maximum','Typical detection distance: 5 to 9 m','OUT: approximately 3.3 V when motion is detected','Pins: 3V3, GND, OUT, VIN and CDS','CDS low (below about 0.7 V) inhibits motion output','Operating temperature: -20 to +80 degrees C','Detection type: moving targets; not reliable for motionless presence'],
+          principle:'A microwave oscillator and PCB antenna illuminate the area continuously. Motion changes the phase and frequency of the reflected signal through the Doppler effect; the RCWL-9196 signal-processing circuit amplifies this change and holds OUT high for a short trigger period.',
+          projects:['Through-enclosure automatic cabinet light','Microwave motion alarm with Arduino','Touch-free door or gate trigger']
+        },
+        'TMB12A05':{
+          explanation:'The TMB12A05 is a 12 mm electromagnetic active buzzer with a built-in tone oscillator. Applying DC power produces a continuous alert tone, so a microcontroller needs only to switch it on or off rather than generate an audio waveform.',
+          uses:['Power, fault and warning alarms','Button-confirmation and status beeps','Timers, appliances and control panels','Microcontroller projects needing a simple fixed tone'],
+          specs:['Type: electromagnetic active buzzer, continuous tone','Rated voltage: 5 V DC; operating range: 3 to 7 V DC','Operating current: 30 mA maximum','Sound output: at least 95 dB at 10 cm','Resonant frequency: 2400 +/-300 Hz','Operating temperature: -40 to +85 degrees C','Weight: about 1.7 g; black PBT housing','Open construction: not waterproof'],
+          principle:'Its internal oscillator repeatedly energises an electromagnetic coil. The alternating magnetic force flexes a diaphragm at roughly 2.4 kHz, producing a continuous tone whenever DC power is applied. Use a transistor or MOSFET driver when the controller pin cannot safely supply the buzzer current.',
+          projects:['5 V Arduino warning beeper','Low-battery alarm','Door-open reminder']
+        },
+        '1034 Coin Vibration Motor':{
+          explanation:'The 1034 coin motor is a flat 10 mm diameter by 3.4 mm thick eccentric-rotating-mass (ERM) vibration motor for compact haptic feedback. The 1034 designation describes the common package size; electrical ratings can differ between manufacturers, so the values below match the linked B1034.FL45-00-015 example.',
+          uses:['Haptic feedback in handheld controls','Silent alarms and wearable notifications','Phone, pager and compact-device repair','Tactile feedback for buttons and touch controls'],
+          specs:['Motor type: single-phase brushed ERM coin motor','Body size: 10 mm diameter x 3.4 mm thick','Rated voltage: 3.0 V DC; operating range: 2.3 to 3.6 V DC','Starting voltage: 2.0 V DC','Rated current: 60 mA maximum','Rated speed: 13,000 +/-3,000 rpm','Operating temperature: -30 to +60 degrees C','Weight: approximately 0.9 g'],
+          principle:'A tiny DC motor spins an off-centre internal mass. The changing centrifugal force transfers vibration through the coin housing into the product. Drive it with a transistor or MOSFET and place a flyback diode across the motor; PWM can vary the perceived strength.',
+          projects:['Silent wearable notification band','Game-controller haptic feedback','Vibrating timer or reminder badge']
         },
         'SSD 1306':{
           explanation:'The SSD1306 drives the ubiquitous 0.96-inch 128x64 monochrome OLED display, usually over I2C. Each pixel emits its own light, giving crisp high-contrast text and graphics with no backlight.',
@@ -888,10 +945,16 @@
         'Optocoupler':['Electrical isolation','Protecting low-voltage control circuits','Isolated signal switching'],
         'Microcontroller Boards':['Prototyping embedded systems','Reading sensors and controlling outputs','Automation, robotics and IoT projects'],
         'Sensors':['Detecting or measuring physical conditions','Monitoring and automation','Providing feedback to a controller'],
+        'Actuators':['Producing sound, motion or tactile feedback','Responding to controller outputs','Alerts, automation and interactive devices'],
         'Modules':['Rapid electronic prototyping','Adding a ready-made hardware function','Connecting sensors, communication or output devices']
       };
 
       function cleanText(text){return text.replace(/\s+/g,' ').trim();}
+      function formatUpdateDate(value){
+        const parts=value.split('-');
+        const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return Number(parts[2])+' '+months[Number(parts[1])-1]+' '+parts[0];
+      }
       function splitItem(raw,category){
         const separators=[/\s*-->\s*/,/\s*\u2192\s*/,/\s+-\s+/];
         let parts=[raw];
@@ -918,25 +981,52 @@
         section.querySelectorAll('ul.items li').forEach(function(li,index){
           const raw=cleanText(li.textContent);
           const parsed=splitItem(raw,category);
-          components.push({
+          const updated=li.dataset.updated||gitBaselineDate;
+          const item={
             id:section.id+'-'+index,
             categoryId:section.id,
             category:category,
             name:parsed.name,
             description:parsed.description,
             raw:raw,
+            updated:updated,
+            catalogOrder:components.length,
             link:li.querySelector('a')?li.querySelector('a').href:'',
             element:li
-          });
+          };
+          components.push(item);
+          li.dataset.updated=updated;
+          const updatedLabel=document.createElement('time');
+          updatedLabel.className='item-updated';
+          updatedLabel.dateTime=updated;
+          updatedLabel.textContent='Updated '+formatUpdateDate(updated);
+          li.appendChild(updatedLabel);
         });
       });
+
+      function compareComponents(a,b){
+        if(sortSelect.value==='date-asc'){
+          return a.updated.localeCompare(b.updated)||a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'})||a.catalogOrder-b.catalogOrder;
+        }
+        if(sortSelect.value==='date-desc'){
+          return b.updated.localeCompare(a.updated)||a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'})||a.catalogOrder-b.catalogOrder;
+        }
+        return a.catalogOrder-b.catalogOrder;
+      }
+
+      function sortCatalogItems(){
+        sections.forEach(function(section){
+          const list=section.querySelector('ul.items');
+          components.filter(function(item){return item.categoryId===section.id;}).sort(compareComponents).forEach(function(item){list.appendChild(item.element);});
+        });
+      }
 
       function matchingComponents(){
         const term=search.value.toLowerCase().trim();
         return components.filter(function(item){
           return (!categorySelect.value||item.categoryId===categorySelect.value)&&
             (!term||(item.name+' '+item.raw+' '+item.category).toLowerCase().includes(term));
-        });
+        }).sort(compareComponents);
       }
 
       function openList(){options.hidden=false;search.setAttribute('aria-expanded','true');}
@@ -970,9 +1060,15 @@
               summary.textContent=sensorInfo.explanation;
               main.appendChild(summary);
             }
-            const category=document.createElement('small');
+            const meta=document.createElement('small');
+            meta.className='combo-option-meta';
+            const category=document.createElement('span');
             category.textContent=item.category;
-            option.append(main,category);
+            const updated=document.createElement('time');
+            updated.dateTime=item.updated;
+            updated.textContent='Updated '+formatUpdateDate(item.updated);
+            meta.append(category,updated);
+            option.append(main,meta);
             option.addEventListener('mousedown',function(event){event.preventDefault();selectItem(item);});
             options.appendChild(option);
           });
@@ -1005,7 +1101,11 @@
         category.textContent=item.category;
         const title=document.createElement('h2');
         title.textContent=item.name;
-        titleWrap.append(category,title);
+        const updated=document.createElement('time');
+        updated.className='detail-updated';
+        updated.dateTime=item.updated;
+        updated.textContent='Updated '+formatUpdateDate(item.updated);
+        titleWrap.append(category,title,updated);
         heading.appendChild(titleWrap);
         const grid=document.createElement('div');
         grid.className='detail-grid';
@@ -1025,6 +1125,17 @@
         useBlock.append(useTitle,useList);
         grid.append(about,useBlock);
         if(sensorInfo){
+          if(sensorInfo.specs){
+            const specsBlock=document.createElement('div');
+            specsBlock.className='detail-block detail-block-wide';
+            const specsTitle=document.createElement('h3');
+            specsTitle.textContent='Key specifications';
+            const specsList=document.createElement('ul');
+            specsList.className='spec-list';
+            sensorInfo.specs.forEach(function(spec){const li=document.createElement('li');li.textContent=spec;specsList.appendChild(li);});
+            specsBlock.append(specsTitle,specsList);
+            grid.appendChild(specsBlock);
+          }
           const principleBlock=document.createElement('div');
           principleBlock.className='detail-block';
           const principleTitle=document.createElement('h3');
@@ -1129,6 +1240,7 @@
         else closeList();
       });
       categorySelect.addEventListener('change',function(){search.value='';renderOptions();search.focus();});
+      sortSelect.addEventListener('change',function(){sortCatalogItems();renderOptions();search.focus();});
       search.addEventListener('keydown',function(event){
         if(event.key==='ArrowDown'){event.preventDefault();if(options.hidden)renderOptions();moveActive(1);}
         else if(event.key==='ArrowUp'){event.preventDefault();moveActive(-1);}
