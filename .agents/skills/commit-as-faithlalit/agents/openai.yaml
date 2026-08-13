@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit as Faith Lalit"
+  short_description: "Commit safely in faithlalit-1/REPORT only"
+  default_prompt: "Use $commit-as-faithlalit to safely commit and push changes in the faithlalit-1/REPORT repository."
