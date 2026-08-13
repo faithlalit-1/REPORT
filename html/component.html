@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electronic Components Reference</title>
+<style>
+  :root{--bg:#0f1221;--card:#1a1f36;--card2:#222843;--text:#e6e9f5;--muted:#9aa3c4;--accent:#5b8cff;--accent2:#9b6bff;--line:#2c3358;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;background:linear-gradient(160deg,#0f1221,#161a30);color:var(--text);line-height:1.55;}
+  header.hero{padding:40px 24px 28px;text-align:center;background:radial-gradient(900px 300px at 50% -40%,rgba(91,140,255,.35),transparent);}
+  header.hero h1{margin:0 0 8px;font-size:2rem;letter-spacing:.5px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  header.hero p{margin:0;color:var(--muted);}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px 60px;}
+  nav.toc{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:24px 0 36px;}
+  nav.toc a{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);color:var(--text);padding:8px 14px;border-radius:999px;text-decoration:none;font-size:.9rem;transition:.2s;}
+  nav.toc a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 18px rgba(91,140,255,.25);}
+  nav.toc .count{background:var(--accent);color:#fff;border-radius:999px;font-size:.72rem;padding:1px 8px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:0 0 22px;scroll-margin-top:16px;}
+  .card h2{margin:0 0 16px;font-size:1.25rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;}
+  .badge{margin-left:auto;font-size:.72rem;font-weight:500;color:var(--muted);background:var(--card2);border:1px solid var(--line);padding:3px 10px;border-radius:999px;}
+  ul.items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px 22px;}
+  ul.items li{padding:7px 10px;border-radius:8px;font-size:.92rem;border:1px solid transparent;transition:.15s;}
+  ul.items li:hover{background:var(--card2);border-color:var(--line);}
+  a{color:var(--accent);}
+  a:hover{color:var(--accent2);}
+  .muted{color:var(--muted);font-size:.85rem;}
+  .table-wrap{overflow-x:auto;margin-top:18px;}
+  table.marking-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px;}
+  table.marking-table th,table.marking-table td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  table.marking-table thead th{background:var(--card2);color:var(--accent);text-transform:uppercase;font-size:.74rem;letter-spacing:.6px;}
+  table.marking-table tbody tr:hover{background:var(--card2);}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:24px;}
+  .search{display:none;}
+  .explorer{position:relative;background:linear-gradient(145deg,rgba(34,40,67,.95),rgba(26,31,54,.95));border:1px solid var(--line);border-radius:18px;padding:22px;margin:0 0 26px;box-shadow:0 18px 45px rgba(4,7,20,.28);}
+  .explorer-title{margin:0 0 4px;font-size:1.18rem;}
+  .explorer-subtitle{margin:0 0 18px;color:var(--muted);font-size:.9rem;}
+  .explorer-controls{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(260px,1.3fr);gap:14px;align-items:end;}
+  .field{position:relative;}
+  .field label{display:block;margin:0 0 7px;color:var(--muted);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.55px;}
+  .field select,.combo-input{width:100%;height:45px;padding:10px 42px 10px 13px;border:1px solid var(--line);border-radius:10px;background:#12162a;color:var(--text);font:inherit;outline:none;}
+  .field select:focus,.combo-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,140,255,.16);}
+  .combo-toggle{position:absolute;right:4px;bottom:4px;width:37px;height:37px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;}
+  .combo-toggle:hover{background:var(--card2);color:var(--text);}
+  .combo-list{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;max-height:290px;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--line);border-radius:12px;background:#12162a;box-shadow:0 18px 35px rgba(0,0,0,.38);}
+  .combo-list[hidden]{display:none;}
+  .combo-option{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:10px 11px;border-radius:8px;cursor:pointer;}
+  .combo-option:hover,.combo-option.active{background:var(--card2);}
+  .combo-option-main{min-width:0;}
+  .combo-option-name{display:block;}
+  .combo-option-description{display:block;margin-top:2px;color:var(--muted);font-size:.75rem;line-height:1.35;}
+  .combo-option small{flex:0 0 auto;color:var(--muted);}
+  .combo-empty{padding:13px;color:var(--muted);text-align:center;}
+  .detail-panel{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:rgba(15,18,33,.7);}
+  .detail-panel.empty{color:var(--muted);text-align:center;padding:28px 18px;}
+  .detail-heading{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
+  .detail-heading h2{margin:1px 0 0;font-size:1.25rem;}
+  .detail-category{display:inline-block;color:var(--accent);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.65px;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .detail-block{padding:14px;border-radius:11px;background:var(--card);}
+  .detail-block h3{margin:0 0 7px;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.55px;}
+  .detail-block p{margin:0;}
+  .detail-block ul{margin:0;padding-left:19px;}
+  .detail-block-wide{grid-column:1/-1;}
+  .drive-mode-block{border:1px solid rgba(91,140,255,.38);background:linear-gradient(145deg,rgba(31,55,105,.45),var(--card));}
+  .drive-mode-block h3{color:#8fb3ff;}
+  .drive-mode-block ol,.drive-mode-block ul{margin:6px 0 0;padding-left:21px;}
+  .drive-mode-subtitle{margin:12px 0 5px!important;font-weight:700;}
+  .drive-mode-note{margin-top:12px!important;color:var(--muted);font-size:.85rem;}
+  .limitation-block{border:1px solid rgba(255,181,71,.34);background:linear-gradient(145deg,rgba(76,55,30,.45),var(--card));}
+  .limitation-block h3{color:#ffcc80;}
+  .limitation-block .table-wrap{margin:12px 0;}
+  .limitation-note{color:var(--muted);font-size:.83rem;}
+  .limitation-subtitle{margin:12px 0 5px!important;font-weight:700;}
+  .limitation-sources{margin-top:10px;font-size:.8rem;}
+  .limitation-sources a{margin-right:14px;}
+  .detail-link{display:inline-block;margin-top:12px;}
+  ul.items li{cursor:pointer;}
+  ul.items li.selected{background:rgba(91,140,255,.14);border-color:var(--accent);}
+  @media(max-width:680px){.explorer-controls,.detail-grid{grid-template-columns:1fr;}.explorer{padding:17px;}}
+</style>
+</head>
+<body>
+  <header class="hero">
+    <h1>⚙️ Electronic Components Reference</h1>
+    <p>13 categories &middot; 100 components &middot; each with explanation, uses, working principle and example projects</p>
+  </header>
+  <div class="wrap">
+    <section class="explorer" aria-labelledby="explorer-title">
+      <h2 id="explorer-title" class="explorer-title">Component Explorer</h2>
+      <p class="explorer-subtitle">Choose a category, then search or select a component to see its explanation, common uses, working principle and example projects.</p>
+      <div class="explorer-controls">
+        <div class="field">
+          <label for="category-filter">Category</label>
+          <select id="category-filter">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div class="field combo" id="component-combo">
+          <label for="component-search">Component</label>
+          <input id="component-search" class="combo-input" type="search" placeholder="Search or choose a component..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="component-options">
+          <button id="combo-toggle" class="combo-toggle" type="button" aria-label="Show component options" tabindex="-1">&#9662;</button>
+          <ul id="component-options" class="combo-list" role="listbox" hidden></ul>
+        </div>
+      </div>
+      <div id="component-detail" class="detail-panel empty" aria-live="polite">
+        Select a component to view its information and uses.
+      </div>
+    </section>
+    <input id="search" class="search" type="search" placeholder="🔍 Filter components…" aria-label="Filter components">
+    <nav class="toc">
+      <a href="#transistor">🔺 Transistor <span class="count">24</span></a>
+      <a href="#diode">➡️ Diode <span class="count">3</span></a>
+      <a href="#mosfet">🔻 Mosfet <span class="count">3</span></a>
+      <a href="#charging-ic">🔋 Charging IC <span class="count">1</span></a>
+      <a href="#volatge-regulator">⚡ Volatge Regulator <span class="count">5</span></a>
+      <a href="#darlington-array-ic">🧩 Darlington array IC <span class="count">1</span></a>
+      <a href="#voltage-comparator-ic">⚖️ Voltage Comparator Ic <span class="count">1</span></a>
+      <a href="#opamp">📈 Opamp <span class="count">2</span></a>
+      <a href="#timer-ic">⏱️ Timer Ic <span class="count">1</span></a>
+      <a href="#optocoupler">💡 Optocoupler <span class="count">1</span></a>
+      <a href="#microcontroller-boards">🖥️ Microcontroller Boards <span class="count">12</span></a>
+      <a href="#sensors">📡 Sensors <span class="count">11</span></a>
+      <a href="#modules">🧰 Modules <span class="count">35</span></a>
+    </nav>
+
+    <section id="transistor" class="card">
+      <h2>🔺 Transistor <span class="badge">24 items</span></h2>
+      <ul class="items">
+          <li>G.1  --&gt; MMBT5551</li>
+          <li>1D   --&gt; MMBTA42             <a href="https://www.st.com/resource/en/datasheet/mmbta42.pdf" target="_blank" rel="noopener"><a href="https://www.st.com/resource/en/datasheet/mmbta42.pdf" target="_blank" rel="noopener">https://www.st.com/resource/en/datasheet/mmbta42.pdf</a></a></li>
+          <li>2L   --&gt; MMBT5401        <a href="https://www.onsemi.com/pdf/datasheet/mmbt5401-d.pdf" target="_blank" rel="noopener"><a href="https://www.onsemi.com/pdf/datasheet/mmbt5401-d.pdf" target="_blank" rel="noopener">https://www.onsemi.com/pdf/datasheet/mmbt5401-d.pdf</a></a></li>
+          <li>2D   --&gt; MMBTA92             <a href="https://www.mouser.in/datasheet/2/308/1/PZTA92_D-2319797.pdf" target="_blank" rel="noopener"><a href="https://www.mouser.in/datasheet/2/308/1/PZTA92_D-2319797.pdf" target="_blank" rel="noopener">https://www.mouser.in/datasheet/2/308/1/PZTA92_D-2319797.pdf</a></a></li>
+          <li>2T1  --&gt; S9012</li>
+          <li>J3Y  --&gt; S8050</li>
+          <li>2TY  --&gt; S8550</li>
+          <li>M6   --&gt; S9015</li>
+          <li>J3   --&gt; S9013</li>
+          <li>J6   --&gt; S9014</li>
+          <li>Y2   --&gt; SS8550</li>
+          <li>Y1   --&gt; SS8050</li>
+          <li>D882 transistor - 3ampere current limit amplifucation 600 approx</li>
+          <li><a href="https://www.etechnophiles.com/bc548-transistor-pinout-specifications-datasheet-and-applications/" target="_blank" rel="noopener">BC548</a>, BC549, BC636, BC639, 2N2222 TO-92, 2N2222 TO-18, 2N2369, 2N3055 and <a href="https://www.etechnophiles.com/2n3904-transistor-pinout-datasheet-specs/" target="_blank" rel="noopener">2N3904</a> all are BC547 transistor equivalent.</li>
+          <li>2N222A --&gt; The 2N2222 is a common NPN bipolar junction transistor (BJT) used for general purpose low-power amplifying or switching applications. It is designed for low to medium current, low power, medium voltage, and can operate at moderately high speeds</li>
+          <li>2N3904 --&gt; The 2N3904 is an extremely popular NPN transistor that is used as a simple electronic switch or amplifier that can handle 200 mA (absolute maximum) and frequencies as high as 100 MHz when used as an amplifier</li>
+          <li>Bi-Polar NPN Transistor</li>
+          <li>DC Current Gain (hFE) is 300 maximum</li>
+          <li>Continuous Collector current (IC) is 200mA</li>
+          <li>Base- Emitter Voltage (VBE) is 6V</li>
+          <li>Collector-Emitter Voltage (VCE) is 40V</li>
+          <li>Collector-Base Voltage (VCB) is 60V</li>
+          <li>2N3906 --&gt;The 2N3906 is a commonly used PNP bipolar junction transistor intended for general purpose low-power amplifying or switching applications. It is designed for low electric current and power and medium voltage, and can operate at moderately high speeds.</li>
+          <li>BC547  --&gt;The BC547 transistor is an NPN transistor. A small current of the base terminal of this transistor will control the large current of the emitter and base terminals. The main function of this transistor is to amplify as well as switching purposes.</li>
+      </ul>
+      <div class="table-wrap">
+        <table class="marking-table">
+          <thead><tr><th>Marking Code</th><th>Standard Part No.</th><th>Type</th><th>Polarity</th><th>Package</th><th>Datasheet Link</th></tr></thead>
+          <tbody>
+          <tr><td>2T1</td><td>S9012</td><td>BJT</td><td>PNP</td><td>TO-92</td><td><a href="https://www.mouser.in/datasheet/2/115/S9012-1388123.pdf" target="_blank" rel="noopener">S9012 Datasheet (PDF)</a></td></tr>
+          <tr><td>J3Y</td><td>S8050</td><td>BJT</td><td>NPN</td><td>TO-92</td><td><a href="https://www.mouser.in/datasheet/2/149/S8050-2011625.pdf" target="_blank" rel="noopener">S8050 Datasheet (PDF)</a></td></tr>
+          <tr><td>2TY</td><td>S8550</td><td>BJT</td><td>PNP</td><td>TO-92</td><td><a href="https://www.mouser.in/datasheet/2/115/S8550-1388116.pdf" target="_blank" rel="noopener">S8550 Datasheet (PDF)</a></td></tr>
+          <tr><td>M6</td><td>S9015</td><td>BJT</td><td>PNP</td><td>TO-92</td><td><a href="https://www.datasheetcatalog.com/datasheets_pdf/S/9/0/1/S9015.shtml" target="_blank" rel="noopener">S9015 Datasheet (PDF)</a></td></tr>
+          <tr><td>J3</td><td>S9013</td><td>BJT</td><td>NPN</td><td>TO-92</td><td><a href="https://www.mouser.in/datasheet/2/115/S9013-1388122.pdf" target="_blank" rel="noopener">S9013 Datasheet (PDF)</a></td></tr>
+          <tr><td>J6</td><td>S9014</td><td>BJT</td><td>NPN</td><td>TO-92</td><td><a href="https://www.datasheetcatalog.com/datasheets_pdf/S/9/0/1/S9014.shtml" target="_blank" rel="noopener">S9014 Datasheet (PDF)</a></td></tr>
+          <tr><td>Y2</td><td>SS8550</td><td>BJT</td><td>PNP</td><td>SOT-23</td><td><a href="https://www.mccsemi.com/pdf/Products/SS8550(SOT-23).pdf" target="_blank" rel="noopener">SS8550 Datasheet (PDF)</a></td></tr>
+          <tr><td>Y1</td><td>SS8050</td><td>BJT</td><td>NPN</td><td>SOT-23</td><td><a href="https://www.mccsemi.com/pdf/Products/SS8050(SOT-23).pdf" target="_blank" rel="noopener">SS8050 Datasheet (PDF)</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">SMD transistor marking-code cross reference (TO-92 / SOT-23).</p>
+    </section>
+
+    <section id="diode" class="card">
+      <h2>➡️ Diode <span class="badge">3 items</span></h2>
+      <ul class="items">
+          <li>T4   --&gt; IN4148(DIODE)</li>
+          <li>S4  → Schottky barrier diode</li>
+          <li>A7 →  IN4007</li>
+      </ul>
+    </section>
+
+    <section id="mosfet" class="card">
+      <h2>🔻 Mosfet <span class="badge">3 items</span></h2>
+      <ul class="items">
+          <li>AO3416  --&gt;A03416 Marking AGSE Low Turn-on Voltage Low on-Resistance N-MOSFET</li>
+          <li>AO3401</li>
+          <li>AO3400</li>
+      </ul>
+    </section>
+
+    <section id="charging-ic" class="card">
+      <h2>🔋 Charging IC <span class="badge">1 items</span></h2>
+      <ul class="items">
+          <li>KD43 --&gt; MCP73831T</li>
+      </ul>
+    </section>
+
+    <section id="volatge-regulator" class="card">
+      <h2>⚡ Volatge Regulator <span class="badge">5 items</span></h2>
+      <ul class="items">
+          <li>AMS1117 3.3 XJS68 --&gt;   3.3v Voltage Regulator</li>
+          <li>AMS1117 3.3 2129K --&gt;    3.3v Voltage Regulator</li>
+          <li>AMS1117 T50 F25LC --&gt;    5.0v Voltage Regulator</li>
+          <li>AMS1117 5.0 GMC1938  --&gt; 5.0v Voltage Regulator</li>
+          <li>AMS117 ADJ S1618E --&gt;  adjustable voltage regulator</li>
+      </ul>
+    </section>
+
+    <section id="darlington-array-ic" class="card">
+      <h2>🧩 Darlington array IC <span class="badge">1 items</span></h2>
+      <ul class="items">
+          <li>ULN2803AG  --&gt; SMD version of ULN2803 ULN2803 is a high-voltage and high-current Darlington transistor array and is mainly used as a relay driver with an ability to handle 8 relays at a time</li>
+      </ul>
+    </section>
+
+    <section id="voltage-comparator-ic" class="card">
+      <h2>⚖️ Voltage Comparator Ic <span class="badge">1 items</span></h2>
+      <ul class="items">
+          <li>LM339--&gt;  LM339 is a voltage comparator IC </li>
+      </ul>
+    </section>
+
+    <section id="opamp" class="card">
+      <h2>📈 Opamp <span class="badge">2 items</span></h2>
+      <ul class="items">
+          <li>LM386 --&gt; The LM386 is a type of operational amplifier (Op-Amp). ... In an amplifier circuit, the LM386 takes an audio input signal and increases its potential anywhere from 20 to 200 times. That amplification is what&#x27;s known as the voltage gain.</li>
+          <li>UA741CP  --&gt; general purpose operational amplifier in 8 pin DIP package</li>
+      </ul>
+    </section>
+
+    <section id="timer-ic" class="card">
+      <h2>⏱️ Timer Ic <span class="badge">1 items</span></h2>
+      <ul class="items">
+          <li>NE555--&gt;Astable (free-running) mode – the 555 can operate as an electronic oscillator. Uses include LED and lamp flashers, pulse generation, logic clocks, tone generation, security alarms, pulse-position modulation and so on.</li>
+      </ul>
+    </section>
+
+    <section id="optocoupler" class="card">
+      <h2>💡 Optocoupler <span class="badge">1 items</span></h2>
+      <ul class="items">
+          <li>H11f1 --&gt;optocoupler</li>
+      </ul>
+    </section>
+
+    <section id="microcontroller-boards" class="card">
+      <h2>🖥️ Microcontroller Boards <span class="badge">12 items</span></h2>
+      <ul class="items">
+          <li>Raspberry PI PICO</li>
+          <li>ESP8266</li>
+          <li>ESP32CAM</li>
+          <li>Bluetooth 3.0 stereo audio receiver module</li>
+          <li>Arduino uno</li>
+          <li>Arduino Due</li>
+          <li>Arduino Mega</li>
+          <li>ESP32</li>
+          <li>Raspberry pi pico</li>
+          <li>Arduino mini pro</li>
+          <li>Arduino lilypad</li>
+          <li>STM32F103C8T6</li>
+      </ul>
+    </section>
+
+    <section id="sensors" class="card">
+      <h2>📡 Sensors <span class="badge">11 items</span></h2>
+      <ul class="items">
+          <li>IR sensor</li>
+          <li>Thermistor</li>
+          <li>Touch Sensor</li>
+          <li>RTD</li>
+          <li>TSOP1738 - IR receiver</li>
+          <li>Piezoelectric speaker</li>
+          <li>L14g1 silicon photo transistor</li>
+          <li>L14F1 GaAs (Gallium arsenic) photo transistor</li>
+          <li>SG90 servo motor</li>
+          <li>3144 Hall sensor</li>
+          <li>BMP180 - Barometric pressure and temperature sensor</li>
+      </ul>
+    </section>
+
+    <section id="modules" class="card">
+      <h2>🧰 Modules <span class="badge">35 items</span></h2>
+      <ul class="items">
+          <li>SIM800L - SIm message and calling 2g</li>
+          <li>PAM8403 - Audio amplifier</li>
+          <li>ISD1820 - Voice Recorder &amp; Sound Playback Module onboard Microphone &amp; Speaker</li>
+          <li>LM393  - Sound sensor module</li>
+          <li>Sound detection sensor module</li>
+          <li>ADXL345 - Accelerometer</li>
+          <li>HCR04 - Ultrasonic sensor</li>
+          <li>RC522 - RFID reader and tag</li>
+          <li>DHT11 - Temperature and humidity module</li>
+          <li>IR infrared sensor module</li>
+          <li>Neo 6M GPS module</li>
+          <li>RF 315 and 433 MHZ module </li>
+          <li>PIR motion sensor module</li>
+          <li>AMS1117 3.3 XJS68 based regulator module</li>
+          <li>3.7 v lithium battery charging module</li>
+          <li>SD card reader module</li>
+          <li>Power bank module</li>
+          <li>LM2003 based servo motor driver</li>
+          <li><a href="https://www.ti.com/product/DRV8837" target="_blank" rel="noopener">DRV8837</a> - 0 to 11 V single H-bridge DC motor driver module</li>
+          <li><a href="https://www.ti.com/product/DRV8833" target="_blank" rel="noopener">DRV8833</a> - 2.7 to 10.8 V dual H-bridge DC/stepper motor driver module</li>
+          <li><a href="https://www.st.com/en/imaging-and-photonics-solutions/vl53l0x.html" target="_blank" rel="noopener">VL53L0X</a> - Time-of-Flight laser distance sensor module</li>
+          <li>SSD 1306 - 128x64 lcd display</li>
+          <li>WTV020M01 - MP3 Audio Module ( Arduino ) →</li>
+          <li>1. Operating voltage: DC2.5 ~ 3.6V</li>
+          <li>2. Sampling rate: 6KHz ~ 16KHz (WAV audio)</li>
+          <li>3. Storage: Supports up to 1GB SD card, up to 512 songs</li>
+          <li>4. Support file: 4Bit ADPCM format</li>
+          <li>5. Audio format: WAV, AD4 audio</li>
+          <li>6. Audio Output: 16-bit DAC/PWM</li>
+          <li>7. No-load current: 16uA (SD card not inserted)</li>
+          <li>8. Format: 6KHz ~ 32KHz, 36KHz AD4 audio; 6KHz to 16KHz WAV audio </li>
+          <li><a href="https://www.hnhcart.com/products/hmc5883l-magnetic-sensor-module" target="_blank" rel="noopener">QMC5883L Magnetic Sensor Module (GY-271 Module)</a>[chip DB 5883 9003]</li>
+          <li><a href="https://www.hnhcart.com/products/mpu-6050-module-3-axis-accelerometer-gyrometer" target="_blank" rel="noopener">MPU-6050 Module (3 Axis accelerometer &amp; Gyrometer)</a></li>
+          <li><a href="https://www.hnhcart.com/products/bh1750-light-intensity-sensor-module" target="_blank" rel="noopener">BH1750- Light Intensity Sensor Module</a></li>
+          <li><a href="https://www.hnhcart.com/products/vibration-sensor-module" target="_blank" rel="noopener">SW-420 Vibration Sensor Module</a></li>
+      </ul>
+    </section>
+
+    <footer>Compiled component catalogue &middot; click any item link to open its datasheet / product page.</footer>
+  </div>
+  <script>
+    (function(){
+      const categorySelect=document.getElementById('category-filter');
+      const search=document.getElementById('component-search');
+      const toggle=document.getElementById('combo-toggle');
+      const options=document.getElementById('component-options');
+      const detail=document.getElementById('component-detail');
+      const sections=Array.from(document.querySelectorAll('section.card'));
+      let activeIndex=-1;
+
+      const sensorDetails={
+        'IR sensor':{
+          explanation:'An infrared sensor detects infrared light that is emitted by an object or reflected from a nearby surface. Depending on the device, it can be used as a simple presence detector, reflective object detector or light-level input.',
+          uses:['Obstacle and proximity detection','Line-following and edge-detection robots','Object counters and touch-free switches','Detecting an infrared remote-control signal'],
+          principle:'An infrared LED sends invisible IR light toward a target. A photodiode or phototransistor receives the reflected light and converts it into an electrical signal; a comparator may turn that signal into a clean HIGH or LOW output.',
+          projects:['IR obstacle-avoiding robot','Automatic hand-sanitizer dispenser','Conveyor-belt object counter']
+        },
+        'Thermistor':{
+          explanation:'A thermistor is a resistor whose resistance changes strongly with temperature. NTC thermistors decrease in resistance as temperature rises, while PTC thermistors increase in resistance.',
+          uses:['Measuring ambient, liquid or surface temperature','Battery-pack and power-supply protection','Temperature compensation in electronic circuits','Inrush-current limiting with suitable thermistor types'],
+          principle:'Temperature changes the number and mobility of charge carriers in the thermistor material. The resulting resistance change is usually measured with a voltage divider and converted to temperature using a calibration curve or equation.',
+          projects:['Digital room thermometer','Temperature-controlled cooling fan','Over-temperature alarm for a battery charger']
+        },
+        'Touch Sensor':{
+          explanation:'A touch sensor detects a finger or conductive object and provides an electronic input without requiring a mechanical button. Common hobby modules use capacitive sensing.',
+          uses:['Touch buttons and control panels','Touch-operated lamps and appliances','Interactive exhibits and toys','Sealed controls for dusty or damp environments'],
+          principle:'A finger adds capacitance to the sensing electrode. The controller measures the resulting change in charge time, frequency or electric field and switches its digital output when the change exceeds a threshold.',
+          projects:['Touch-controlled bedside lamp','Capacitive piano keyboard','Hidden touch switch behind acrylic']
+        },
+        'RTD':{
+          explanation:'A resistance temperature detector (RTD) is a precision temperature sensor, commonly made from platinum such as a PT100 or PT1000. It offers good accuracy, repeatability and long-term stability.',
+          uses:['Industrial process-temperature measurement','Laboratory instruments and calibration','HVAC and food-processing equipment','Motor, bearing and machinery monitoring'],
+          principle:'The electrical resistance of a pure metal rises predictably with temperature. A small known current is passed through the RTD and its voltage is measured; three- or four-wire connections compensate for lead resistance.',
+          projects:['PT100 temperature data logger','PID-controlled heating plate','High-accuracy fermentation monitor']
+        },
+        'TSOP1738':{
+          explanation:'The TSOP1738 is a 38 kHz infrared remote-control receiver. It combines an IR detector, filter, automatic gain control and demodulator to produce a logic signal that a microcontroller can decode.',
+          uses:['Receiving TV-style remote-control commands','Wireless control of lights, fans and robots','Learning or testing IR handsets','Short-range one-way command links'],
+          principle:'The module detects IR light pulsed on a 38 kHz carrier, rejects steady ambient light and most other frequencies, then demodulates the bursts into an active-low digital pulse stream containing the remote-control code.',
+          projects:['IR remote-controlled home-automation switch','Remote-controlled robot car','Universal remote-code decoder']
+        },
+        'Piezoelectric speaker':{
+          explanation:'A piezoelectric speaker or buzzer converts an alternating electrical signal into sound. It is compact, efficient at alert tones and often used as both an output transducer and a vibration sensor.',
+          uses:['Beeps, alarms and status feedback','Timers, meters and appliance key tones','Simple melodies from a microcontroller','Detecting knocks, taps or vibration when used in reverse'],
+          principle:'An applied voltage makes the piezoelectric ceramic bend slightly. Alternating the voltage causes rapid mechanical vibration, and the attached diaphragm moves air to create sound; its resonant frequency produces the loudest tone.',
+          projects:['Arduino melody doorbell','Water-level warning alarm','Electronic metronome']
+        },
+        'L14g1 silicon photo transistor':{
+          explanation:'The L14G1 is a silicon NPN phototransistor that converts visible and near-infrared light into collector current. It provides more sensitivity than a basic photodiode but responds more slowly.',
+          uses:['Light and shadow detection','Optical interruption and object counting','Reflective speed or position sensing','Flame, pulse and optical communication experiments'],
+          principle:'Incoming photons generate charge carriers in the base-collector junction. Transistor action amplifies this light-generated current, so collector current increases with incident light intensity.',
+          projects:['Laser tripwire alarm','Slotted-wheel RPM counter','Automatic night-light controller']
+        },
+        'L14F1 GaAs (Gallium arsenic) photo transistor':{
+          explanation:'The L14F1 is a phototransistor intended for detecting light, especially near-infrared wavelengths. Its photosensitive transistor output lets a small amount of received light control a larger collector current.',
+          uses:['Infrared beam-break detectors','Reflective encoders and tachometers','Optical switches and counters','Short-range optical signalling'],
+          principle:'Light energy reaching the semiconductor junction creates carriers that act like base current in a transistor. The transistor amplifies this photocurrent, producing an output proportional to received light over its operating range.',
+          projects:['IR doorway people counter','Motor-shaft optical tachometer','Infrared data-link receiver']
+        },
+        'SG90 servo motor':{
+          explanation:'The SG90 is a small hobby servo containing a DC motor, reduction gears, position sensor and control electronics. It rotates its output shaft to a commanded angle, typically across roughly 180 degrees.',
+          uses:['Positioning robot arms, grippers and steering','Moving camera mounts and sensor scanners','Operating model control surfaces','Opening lightweight latches, vents or feeders'],
+          principle:'A controller sends repeated pulse-width commands. Internal electronics compare the requested position with feedback from a potentiometer, drive the motor through gears and stop when the position error is nearly zero.',
+          projects:['Ultrasonic radar scanner','Pan-and-tilt camera mount','Automatic pet-food dispenser']
+        },
+        '3144 Hall sensor':{
+          explanation:'The 3144 is a digital Hall-effect magnetic sensor that switches when a magnetic field of the correct polarity is nearby. Many versions provide an open-collector output and need a pull-up resistor.',
+          uses:['Non-contact position and limit sensing','Wheel-speed and RPM measurement','Door, lid and security detection','Detecting a rotating magnet in motors or flow meters'],
+          principle:'A magnetic field perpendicular to the semiconductor creates a small Hall voltage. An internal amplifier, threshold circuit and hysteresis convert it to a stable digital output that changes state near a magnet.',
+          projects:['Bicycle speedometer','Magnetic door-open alarm','Contactless motor RPM counter']
+        },
+        'BMP180':{
+          explanation:'The BMP180 is a digital barometric-pressure and temperature sensor. Its calibrated readings can be used to estimate altitude and monitor atmospheric or weather changes.',
+          uses:['Barometric pressure and weather monitoring','Relative altitude and elevation measurement','Indoor environmental data logging','Altitude assistance for robots and small aircraft'],
+          principle:'A micromachined piezoresistive diaphragm changes electrical resistance as air pressure flexes it. An internal ADC measures pressure and temperature, and stored calibration coefficients are applied before values are read over I2C.',
+          projects:['Arduino weather station','Portable altimeter','Pressure and temperature IoT logger'],
+          limitation:{
+            title:'Wind limitation — Varanasi example',
+            summary:'Fast airflow at the pressure opening changes the local pressure, so pressure and calculated altitude can be wrong even though the BMP180 itself remains within specification. Wind aimed into the opening can raise pressure; airflow across it can create suction and lower pressure.',
+            rows:[
+              ['40 km/h (11.1 m/s)','74 Pa / 0.74 hPa','about 6 m'],
+              ['60 km/h (16.7 m/s)','167 Pa / 1.67 hPa','about 14 m'],
+              ['85 km/h (23.6 m/s)','334 Pa / 3.34 hPa','about 28 m'],
+              ['169 km/h (47 m/s)','1,325 Pa / 13.25 hPa','about 110 m']
+            ],
+            note:'The 85 km/h row uses a severe gust recorded by IMD in Varanasi on 13 May 2026. The 47 m/s row is Varanasi\'s rare structural basic-wind design value, not a normal daily wind speed. Estimates assume air density of 1.2 kg/m³, full dynamic pressure reaching the port and near-sea-level altitude conversion; actual error depends strongly on enclosure shape and wind direction.',
+            mitigation:['Mount the sensor inside a ventilated enclosure','Use several small side-facing ventilation holes','Place breathable foam between the outside air and sensor','Do not point the pressure opening directly into the wind','Average readings to reduce gust fluctuations; averaging cannot remove a steady pressure offset'],
+            sources:[
+              ['IMD Varanasi gust report','https://internal.imd.gov.in/press_release/20260515_pr_4986.pdf'],
+              ['BIS wind-design reference','https://www.services.bis.gov.in/tmp/WCCED21426932_12032025_1.pdf']
+            ]
+          }
+        }
+      };
+
+      const moreDetails={
+        'T4':{
+          explanation:'T4 is the SMD marking code for the 1N4148, a fast small-signal silicon switching diode rated about 100 V and 200 mA. It switches in roughly 4 nanoseconds, which makes it ideal for logic and signal work rather than power rectification.',
+          uses:['High-speed signal switching and logic steering','Clamping inputs to protect them from voltage spikes','Small-signal rectification and envelope detection','Blocking reverse current in low-power circuits'],
+          principle:'A silicon PN junction conducts when forward biased above roughly 0.7 V and blocks when reverse biased. The 1N4148 uses a tiny junction with very little stored charge, so it stops conducting almost instantly when the polarity reverses.',
+          projects:['Crystal AM radio detector','Diode OR gate for two logic signals','Back-EMF clamp across a small relay coil']
+        },
+        'S4':{
+          explanation:'S4 is a common SMD marking for a Schottky barrier diode of the SS14 / 1N5819 class, typically rated 40 V and 1 A. Schottky diodes drop only about 0.2 to 0.4 V when conducting and switch much faster than ordinary silicon rectifiers.',
+          uses:['Output rectification in switch-mode power supplies','Low-loss reverse-polarity protection','Freewheeling diode in buck and boost converters','Blocking diode for solar panels and battery packs'],
+          principle:'A Schottky diode forms a metal-to-semiconductor junction instead of a PN junction. Conduction is by majority carriers only, so there is almost no stored charge to remove, giving a low forward drop and very fast switching at the cost of higher reverse leakage.',
+          projects:['DC-DC buck converter freewheel diode','Solar garden-light charge path','Battery reverse-connection protector']
+        },
+        'A7':{
+          explanation:'A7 is the SMD marking for the 1N4007 (M7 in SMA package), a general-purpose silicon rectifier rated 1000 V reverse voltage and 1 A forward current. It is the workhorse diode for mains and low-frequency power rectification.',
+          uses:['Converting AC to DC in power supplies','Bridge rectifiers','Reverse-polarity protection for equipment inputs','Flyback clamping across relay and motor coils'],
+          principle:'The PN junction passes current only when the anode is more positive than the cathode. In a rectifier the diode conducts on one half of the AC waveform and blocks on the other, producing pulsating DC that a capacitor then smooths.',
+          projects:['Full-bridge AC adapter power supply','12 V relay driver with flyback protection','Battery charger input rectifier']
+        },
+        'G.1':{
+          explanation:'G.1 is the SOT-23 marking for the MMBT5551, an NPN high-voltage small-signal transistor rated about 160 V collector-emitter and 600 mA. It is the surface-mount version of the 2N5551.',
+          uses:['Switching loads that sit on higher supply rails','Telephone-line and audio circuits with high supply voltage','Driving neon, VFD or LED strings above 50 V','General amplification where 40 V transistors are not enough'],
+          principle:'A small base current forward-biases the base-emitter junction and allows a much larger collector current to flow, multiplied by the current gain hFE. A wide, lightly doped collector region lets this part block far higher voltage than ordinary small-signal BJTs.',
+          projects:['Nixie or VFD segment driver','High-voltage LED strip switch from a logic pin','Audio preamplifier on a 60 V rail']
+        },
+        '1D':{
+          explanation:'1D is the SOT-23 marking for the MMBTA42, an NPN small-signal transistor rated about 300 V collector-emitter. It is used where a logic-level signal must switch a load on a very high DC rail.',
+          uses:['High-voltage level shifting','Driving optocoupler and gate-driver inputs from HV rails','Telephone and telecom interface circuits','Start-up circuits in offline power supplies'],
+          principle:'Standard NPN transistor action, but with a collector structure engineered to withstand about 300 V. Base current controls collector current with modest gain, and the part stays off with negligible leakage even at high collector voltage.',
+          projects:['Mains-side start-up bleeder for an SMPS','300 V rail status indicator','Nixie tube cathode driver']
+        },
+        '2L':{
+          explanation:'2L is the SOT-23 marking for the MMBT5401, a PNP high-voltage small-signal transistor rated about -150 V. It is the complement of the MMBT5551 and the surface-mount version of the 2N5401.',
+          uses:['High-side switching on high-voltage rails','Complementary pairs with MMBT5551 in amplifiers','Level shifting from high rails down to logic','Audio driver stages with elevated supplies'],
+          principle:'In a PNP transistor a small current pulled out of the base lets a much larger current flow from emitter to collector. The high-voltage process keeps the transistor safely off when the emitter-collector voltage is large.',
+          projects:['High-side lamp switch on a 100 V bus','Symmetrical audio preamp with MMBT5551','Current source for an LED string']
+        },
+        '2D':{
+          explanation:'2D is the SOT-23 marking for the MMBTA92, a PNP small-signal transistor rated about -300 V. It is the complement of the MMBTA42 for high-voltage, low-current work.',
+          uses:['High-side switching on very high DC rails','Complementary output stages with MMBTA42','High-voltage current mirrors and sources','Telecom ring-detection circuits'],
+          principle:'PNP transistor action with a collector designed for about 300 V: a small base current flowing out of the base controls a larger emitter-to-collector current, letting logic-level signals manage loads referenced to a high positive rail.',
+          projects:['Nixie anode high-side driver','300 V test-supply current limiter','High-voltage rail sequencing circuit']
+        },
+        '2T1':{
+          explanation:'2T1 is the marking for the S9012, a general-purpose PNP transistor rated about -40 V and -500 mA. It is a very common part in audio driver and small switching stages, complementary to the S9013.',
+          uses:['Audio driver and output stages','High-side switching of LEDs and small loads','Push-pull output pairs with S9013','General PNP amplification'],
+          principle:'A small current out of the base turns the transistor on and allows a much larger current to flow from emitter to collector. Gain (hFE) of a few hundred lets milliamp-level base drive control the full load current.',
+          projects:['Push-pull headphone amplifier','High-side battery-indicator LED switch','Small DC motor reverse leg of an H-bridge']
+        },
+        'J3Y':{
+          explanation:'J3Y is the marking for the S8050, a popular NPN transistor rated about 25 V with peak collector current up to 1.5 A depending on manufacturer. It suits small power switching and audio output work.',
+          uses:['Driving buzzers, relays and small motors','Audio amplifier output stages','LED strip and lamp switching from logic pins','Complementary pairs with the S8550'],
+          principle:'Base current injected into the base-emitter junction is amplified by transistor action into a collector current several hundred times larger, so a microcontroller pin sourcing a few milliamps can switch loads of hundreds of milliamps.',
+          projects:['Arduino buzzer and relay driver','Pocket audio amplifier output pair','Battery-powered flashlight driver']
+        },
+        '2TY':{
+          explanation:'2TY is the marking for the S8550, a PNP transistor complementary to the S8050, rated about -25 V and up to -1.5 A peak. It handles high-side switching and the PNP half of push-pull stages.',
+          uses:['High-side switching of LEDs and modules','Push-pull audio output with S8050','Reverse-polarity soft switches','Driving loads returned to ground'],
+          principle:'Pulling current out of the base turns the PNP on, letting a much larger current flow from the positive supply through the emitter to the collector and load. It conducts when the base is roughly 0.7 V below the emitter.',
+          projects:['High-side power switch for a sensor module','Complementary audio output stage','Soft power-on latch circuit']
+        },
+        'M6':{
+          explanation:'M6 is the marking for the S9015, a low-noise PNP small-signal transistor rated about -45 V and -100 mA with high gain. It is intended for quiet preamplifier stages.',
+          uses:['Microphone and audio preamplifiers','Low-noise sensor signal conditioning','High-side small-signal switching','Complement to the S9014 in input stages'],
+          principle:'Small-geometry PNP transistor action optimised for low noise: base current controls collector current with high hFE, and careful doping keeps the random noise added to small signals low.',
+          projects:['Electret microphone preamp','Vinyl player line-level booster','Low-noise front end for an oscilloscope probe']
+        },
+        'J3':{
+          explanation:'J3 is the marking for the S9013, an NPN transistor rated about 40 V and 500 mA. It is a common driver transistor for relays, buzzers and small audio output stages, complementary to the S9012.',
+          uses:['Relay and buzzer driving','Small audio power stages','Switching indicator lamps and LEDs','Class B push-pull pairs with S9012'],
+          principle:'Standard NPN action: current into the base is multiplied by the gain into collector current. Driven hard into saturation it behaves like a closed switch with only a fraction of a volt across it.',
+          projects:['5 V relay module driver','Intercom speaker output stage','Melody generator speaker driver']
+        },
+        'J6':{
+          explanation:'J6 is the marking for the S9014, an NPN low-noise, high-gain small-signal transistor rated about 45 V and 100 mA. With hFE that can exceed 400 it is a favourite for first-stage amplification.',
+          uses:['Microphone and guitar preamps','High-impedance sensor buffers','Darlington-style compound pairs','General small-signal amplification'],
+          principle:'Very high current gain means a few microamps of base current create milliamps of collector current, letting weak signals from microphones or sensors be raised to usable levels with minimal added noise.',
+          projects:['Two-transistor audio preamplifier','Clap-switch sound detector front end','Touch-plate sensor amplifier']
+        },
+        'Y2':{
+          explanation:'Y2 is the SOT-23 marking for the SS8550, a surface-mount PNP transistor rated about -25 V and -1.5 A. It packs unusually high current capability into a small SMD package.',
+          uses:['High-side load switching on PCBs','Portable audio output stages','Driving vibration motors and LEDs in compact devices','Complementary pairs with SS8050'],
+          principle:'PNP transistor action with a die designed for high current density: base current pulled toward ground switches up to about 1.5 A from emitter to collector while keeping saturation voltage low.',
+          projects:['Phone-sized audio amplifier','High-side switch for a GPS module','Haptic vibration motor driver']
+        },
+        'Y1':{
+          explanation:'Y1 is the SOT-23 marking for the SS8050, a surface-mount NPN transistor rated about 25 V and 1.5 A. It is the go-to SMD part when a small footprint must switch more than the usual 200 mA.',
+          uses:['Driving relays, solenoids and motors from logic','Audio output stages on compact boards','LED backlight switching','Complementary pairs with SS8550'],
+          principle:'NPN transistor action with high permissible collector current: a few milliamps of base drive saturate the transistor so it conducts over an amp with low voltage drop and modest heating.',
+          projects:['SMD relay driver on a custom PCB','Mini Bluetooth speaker output','Solenoid lock pulse driver']
+        },
+        'D882':{
+          explanation:'The D882 (2SD882) is an NPN medium-power transistor in a TO-126 package, rated about 30 V and 3 A with high gain. It bridges the gap between small-signal parts and true power transistors.',
+          uses:['Driving DC motors and larger relays','Series-pass element in simple regulators','Audio power output stages','Battery charging and power-switch circuits'],
+          principle:'Larger die area and package let this NPN transistor carry amps of collector current controlled by tens of milliamps of base current, with the metal tab spreading heat; a heat sink extends its safe operating power.',
+          projects:['Adjustable bench power supply pass transistor','12 V DC motor speed controller','2 W audio amplifier output']
+        },
+        'BC548':{
+          explanation:'BC548, BC549, BC636, BC639, 2N2222, 2N2369, 2N3055 and 2N3904 are all listed here as substitutes for the BC547 family. They are general-purpose silicon transistors that differ mainly in voltage rating, current rating, gain and noise figure.',
+          uses:['Drop-in replacement when a BC547 is unavailable','General switching and amplification','Audio preamps (BC549 is the low-noise pick)','Higher-current jobs (2N3055 is the power option)'],
+          principle:'All are bipolar junction transistors: base current controls a much larger collector current. As long as the substitutes voltage, current and gain ratings meet or exceed the circuit requirements, one BJT can usually stand in for another with the same polarity and pinout checked.',
+          projects:['Transistor tester learning board','Substitution experiments in a common-emitter amp','Multivibrator LED flasher with mixed equivalents']
+        },
+        '2N222A':{
+          explanation:'The 2N2222A is a classic NPN bipolar junction transistor rated 40 V and 800 mA, usable to moderately high speeds. For decades it has been the default general-purpose NPN in hobby and industrial designs alike.',
+          uses:['Switching relays, LEDs and small motors','Small-signal and RF amplification up to tens of MHz','Logic-level buffering and inversion','Astable and monostable multivibrators'],
+          principle:'Current injected into the base lowers the base-emitter barrier and transistor action multiplies it into a collector current up to a few hundred times larger; saturated, it acts as a low-resistance switch.',
+          projects:['Joule thief LED circuit','Two-transistor blinker','FM bug transmitter amplifier stage']
+        },
+        '2N3904':{
+          explanation:'The 2N3904 is an extremely popular NPN small-signal transistor rated 40 V and 200 mA, with useful gain up to about 100 MHz. It is one of the first transistors most people ever use.',
+          uses:['Simple electronic switches for LEDs and buzzers','Audio and small-signal amplification','Oscillators and timing circuits','Logic interfacing between 3.3 V and 5 V systems'],
+          principle:'A base current of a fraction of a milliamp controls a collector current up to a couple of hundred milliamps through bipolar transistor action; biased in its linear region it amplifies, driven hard it switches.',
+          projects:['Dark-activated LED night light','One-transistor code-practice oscillator','Transistor curve-tracing experiment']
+        },
+        '2N3906':{
+          explanation:'The 2N3906 is the PNP complement of the 2N3904, rated -40 V and -200 mA. It handles general-purpose low-power amplification and switching where the load must be switched on its high side.',
+          uses:['High-side switching of LEDs and loads','Complementary push-pull stages with 2N3904','Current sources and mirrors','PNP half of H-bridge motor drivers'],
+          principle:'Current flowing out of the base (base pulled about 0.7 V below the emitter) turns the transistor on, allowing a much larger current to pass from emitter to collector into the load.',
+          projects:['Complementary astable flasher','Small H-bridge motor reverser','Constant-current LED driver']
+        },
+        'BC547':{
+          explanation:'The BC547 is a general-purpose NPN transistor rated 45 V and 100 mA with gain up to about 800. A tiny base current controls a much larger collector current, making it useful for both amplification and switching.',
+          uses:['Amplifying microphone and sensor signals','Switching LEDs, buzzers and small relays','Darlington pairs for touch and moisture sensing','Classic learning circuits and kits'],
+          principle:'Forward-biasing the base-emitter junction injects carriers that transistor action multiplies into collector current, giving current gain of several hundred; in saturation it behaves like a closed switch.',
+          projects:['Rain alarm with two BC547s','Clap switch','Simple electret mic preamp']
+        },
+        'AO3416':{
+          explanation:'The AO3416 (marking AGSE) is an N-channel logic-level MOSFET in SOT-23, rated about 20 V and 6.5 A with very low on-resistance. Its low turn-on threshold lets 2.5 to 3.3 V logic drive it fully on.',
+          uses:['Load switching directly from 3.3 V microcontrollers','DC-DC converter switching element','Battery-powered device power gating','PWM dimming of LED strips'],
+          principle:'A voltage on the insulated gate creates a conductive channel between drain and source; no continuous gate current is needed. Above its low threshold voltage the channel resistance drops to milliohms, so it switches efficiently with little heat.',
+          projects:['ESP32-controlled 12 V LED strip dimmer','Battery load switch with soft start','Small solar MPPT switching stage']
+        },
+        'AO3401':{
+          explanation:'The AO3401 is a P-channel MOSFET in SOT-23, rated about -30 V and -4 A with low on-resistance. It is the standard choice for compact high-side switching and reverse-polarity protection.',
+          uses:['High-side power switches','Reverse-polarity protection with near-zero loss','Load sharing between battery and USB power','P-channel half of small H-bridges'],
+          principle:'Pulling the gate a few volts below the source enhances a P-type channel that conducts from source to drain. Used for polarity protection, its body diode conducts first and then the channel turns on, dropping only millivolts.',
+          projects:['USB / battery automatic power switch','Reverse-polarity protected sensor node','Compact motor H-bridge with AO3400']
+        },
+        'AO3400':{
+          explanation:'The AO3400 is an N-channel logic-level MOSFET in SOT-23, rated about 30 V and 5.7 A with on-resistance in the tens of milliohms. It is one of the most common small SMD switching FETs.',
+          uses:['Low-side switching of motors, LEDs and heaters','PWM speed and brightness control','Level-shifting drive stages','Synchronous rectification in small converters'],
+          principle:'Gate voltage above roughly 1.4 V forms an N-type channel between drain and source; because the gate is insulated, the driving pin supplies only a brief charging current, and conduction loss is set by the very low channel resistance.',
+          projects:['PWM cooling-fan controller','3D-printer heated-bed switch (small beds)','Logic-level relay replacement']
+        },
+        'KD43':{
+          explanation:'KD43 is the marking for the MCP73831T, a single-cell lithium-ion / lithium-polymer charge-management IC. It performs a complete constant-current, constant-voltage charge to 4.2 V with the charge current set by one resistor (up to about 500 mA).',
+          uses:['Charging single LiPo cells from USB 5 V','Adding recharge capability to portable projects','Charge-status LED indication','Safe topping-off of small backup batteries'],
+          principle:'The IC first applies a small preconditioning current to a deeply discharged cell, then a programmed constant current, and finally holds a precise 4.2 V while the current tapers. It terminates when charge current falls to a set fraction and monitors die temperature throughout.',
+          projects:['USB-rechargeable LED torch','Solar-charged weather sensor node','Rechargeable game controller mod']
+        },
+        'AMS1117 3.3':{
+          explanation:'The AMS1117-3.3 is a 1 A low-dropout linear regulator that outputs a fixed 3.3 V from inputs up to 15 V, needing only about 1.1 V of headroom. Marking suffixes such as XJS68 or 2129K are factory lot codes, not different parts.',
+          uses:['Powering ESP8266 / ESP32 and 3.3 V sensors from 5 V','Point-of-load regulation on breakout boards','Clean supply for RF and analog sections','Deriving 3.3 V logic rails from USB'],
+          principle:'An internal pass transistor is continuously adjusted by an error amplifier that compares a fraction of the output with a bandgap reference, so the output stays at 3.3 V while excess input voltage is dropped across the regulator as heat.',
+          projects:['5 V-to-3.3 V level rail for an ESP-01','Breadboard power rail module','Battery-fed sensor supply']
+        },
+        'AMS1117 5.0':{
+          explanation:'The AMS1117-5.0 is a 1 A low-dropout linear regulator with a fixed 5.0 V output. The GMC1938 marking is a manufacturing lot code; electrically it is a standard AMS1117 five-volt part.',
+          uses:['Regulating 7-12 V adapters down to 5 V','Powering Arduino-class boards and 5 V modules','USB-level rail generation from batteries','Stable reference supply for sensor circuits'],
+          principle:'A feedback divider samples the output and an error amplifier drives the internal pass element to hold exactly 5 V against load and input changes; input voltage above the dropout margin is dissipated as heat.',
+          projects:['12 V car adapter to 5 V converter','Bench 5 V utility rail','Powering a servo control board']
+        },
+        'AMS1117 T50':{
+          explanation:'AMS1117 T50 (lot code F25LC) is the fixed 5.0 V version of the AMS1117 1 A low-dropout regulator. It behaves identically to other AMS1117-5.0 parts: 5 V out from roughly 6.2 to 12 V in.',
+          uses:['Dropping 9-12 V supplies to a clean 5 V','Powering microcontroller and relay boards','Local re-regulation of a noisy 6-9 V rail','Small linear power supplies'],
+          principle:'Linear series regulation: the internal transistor acts as a controlled resistance, adjusted by a feedback loop comparing the output with an internal reference, so the output stays at 5 V and the surplus voltage becomes heat.',
+          projects:['9 V battery to 5 V logic supply','Doorbell camera auxiliary rail','LED matrix 5 V feed']
+        },
+        'AMS117 ADJ':{
+          explanation:'The AMS1117-ADJ is the adjustable version of the AMS1117 low-dropout regulator. Two external resistors set any output from 1.25 V up to near the input voltage, at up to 1 A.',
+          uses:['Generating non-standard rails such as 1.8 V or 2.5 V','Variable bench supply front ends','Trimming a rail precisely with a potentiometer','Powering CPUs or FPGAs that need odd voltages'],
+          principle:'The regulator holds exactly 1.25 V between its output and adjust pins. A resistor divider from output to adjust to ground multiplies that reference, so output voltage equals 1.25 times (1 + R2/R1) plus a tiny adjust-pin current term.',
+          projects:['Pot-adjustable 1.25-9 V mini supply','1.8 V rail for a flash memory experiment','Fine-tuned LED constant-voltage source']
+        },
+        'ULN2803AG':{
+          explanation:'The ULN2803A is an array of eight NPN Darlington drivers, each able to sink 500 mA at up to 50 V, with built-in flyback diodes. It lets a microcontroller port drive eight relays, motors or lamp loads directly.',
+          uses:['Driving up to eight relays from logic pins','Unipolar stepper motor windings','LED strips, lamps and seven-segment digits','Solenoids and small DC motor loads'],
+          principle:'Each channel is two NPN transistors in Darlington connection, so the gains multiply and a 2-3 mA logic input saturates a 500 mA output. Internal series base resistors accept 5 V logic directly, and clamp diodes to the COM pin absorb inductive kickback.',
+          projects:['8-channel relay home-automation board','28BYJ-48 stepper driver','Scrolling LED display column driver']
+        },
+        'LM339':{
+          explanation:'The LM339 is a quad voltage comparator with open-collector outputs, operating from a single 2 to 36 V supply. Each of its four comparators tells you which of two input voltages is higher.',
+          uses:['Threshold detection for light, temperature and voltage sensors','Zero-crossing detectors','Window comparators for over/under range alarms','Square-wave generation from analog signals'],
+          principle:'A high-gain differential input stage compares the two input pins; when the non-inverting input is higher the open-collector output floats (pulled high by an external resistor), otherwise it pulls firmly to ground. Adding positive feedback creates hysteresis for clean switching.',
+          projects:['Battery low-voltage alarm','Light-dependent street lamp switch','Four-level battery fuel gauge with LEDs']
+        },
+        'LM386':{
+          explanation:'The LM386 is a low-voltage audio power amplifier that boosts an audio signal by a gain of 20 to 200 and drives a small speaker directly. It runs from 4 to 12 V and delivers a few hundred milliwatts.',
+          uses:['Small speaker amplifiers for radios and toys','Amplified test speakers for the workbench','Simple intercoms and door phones','Boosting DAC or buzzer audio in projects'],
+          principle:'An internal differential amplifier followed by a class AB push-pull output stage amplifies the input; gain is 20 by default and rises toward 200 when a capacitor bridges pins 1 and 8, with the output biased at half supply so a coupling capacitor feeds the speaker.',
+          projects:['Pocket guitar practice amp','Arduino audio player output stage','One-chip AM radio speaker driver']
+        },
+        'UA741CP':{
+          explanation:'The UA741 is the classic general-purpose operational amplifier in an 8-pin DIP package. Though dated, it remains a standard teaching and utility op-amp for filters, buffers and simple amplifiers.',
+          uses:['Inverting and non-inverting amplifiers','Voltage followers and buffers','Active filters and integrators','Comparator duty in non-critical circuits'],
+          principle:'A very high open-loop gain differential amplifier drives its output toward whatever voltage makes its two inputs equal. Negative feedback through external resistors then sets a precise, stable closed-loop gain determined only by the resistor ratio.',
+          projects:['Adjustable-gain audio preamp','Light-meter with photodiode and op-amp','Triangle/square function generator']
+        },
+        'NE555':{
+          explanation:'The NE555 is the most famous timer IC ever made. It generates accurate time delays (monostable mode) or continuous oscillations (astable mode) using just two resistors and a capacitor, from a 4.5 to 16 V supply.',
+          uses:['LED and lamp flashers','Pulse and clock generation','PWM motor and LED dimming','Timers, alarms and tone generators'],
+          principle:'Two internal comparators watch a capacitor charging through external resistors against 1/3 and 2/3 of the supply voltage. They set and reset a flip-flop that drives the output and a discharge transistor, so the capacitor endlessly charges and discharges between the two thresholds.',
+          projects:['Adjustable LED blinker','555 PWM DC motor speed controller','Electronic dice with a 555 clock']
+        },
+        'H11f1':{
+          explanation:'The H11F1 is an optocoupled photoFET: an infrared LED optically controls an isolated bilateral FET that behaves like a small solid-state analog switch or voltage-controlled resistor, with no electrical connection between the two sides.',
+          uses:['Isolated analog signal switching','Galvanically isolated volume or gain control','Replacing mechanical relays for tiny AC/DC signals','Breaking ground loops between circuits'],
+          principle:'Current through the input LED illuminates a symmetrical FET structure whose channel resistance falls from many megohms to a few hundred ohms. Because the output is a resistive channel rather than a transistor junction, it passes small AC or DC signals in either direction without distortion.',
+          projects:['Isolated guitar-effect switching','Digitally controlled analog attenuator','Medical-style isolated sensor interface']
+        },
+        'Raspberry Pi Pico':{
+          explanation:'The Raspberry Pi Pico is a microcontroller board built on the RP2040: dual Cortex-M0+ cores at 133 MHz, 264 KB RAM and 2 MB of physical flash. Its unique programmable I/O (PIO) blocks can implement custom interfaces in hardware. The roughly 127 MB shown by Windows as RPI-RP2 is only a virtual bootloader volume, not real usable storage.',
+          uses:['General embedded prototyping in C/C++ or MicroPython','Driving displays, LEDs and motors','Custom protocols via PIO (VGA, quadrature, WS2812)','USB device projects such as keyboards and gamepads'],
+          principle:'The RP2040 executes your program from external QSPI flash, using two ARM cores plus eight PIO state machines that run tiny independent programs to generate precise waveforms without CPU load. Drag-and-drop UF2 bootloading makes flashing as easy as copying a file.',
+          projects:['USB macro keyboard','WS2812 LED matrix clock','Logic analyzer using PIO capture'],
+          driveMode:{
+            summary:'RPI-RP2 is a temporary virtual FAT drive created by the Pico\'s ROM bootloader. Its roughly 127 MB reported capacity is not backed by physical storage, so it cannot be used as a normal USB drive.',
+            steps:['Disconnect the Pico from USB.','Press and hold the BOOTSEL button on the Pico.','While holding BOOTSEL, plug the Pico into the computer using a data-capable USB cable.','Release BOOTSEL when the removable drive named RPI-RP2 appears.'],
+            uses:['Install or replace firmware by copying a compatible .uf2 file to RPI-RP2.','Recover the board when a faulty program crashes, loops or prevents a normal upload.','Switch firmware, for example between MicroPython, CircuitPython and a C/C++ application.','Erase or reset the flash with an appropriate erase UF2 before a clean firmware installation.'],
+            note:'After a valid UF2 file is copied, the Pico writes it to its real flash, restarts automatically and RPI-RP2 normally disappears. Ordinary files copied to RPI-RP2 are not stored persistently. A CIRCUITPY drive, if present after CircuitPython starts, is a separate persistent filesystem and should not be confused with RPI-RP2.'
+          }
+        },
+        'ESP8266':{
+          explanation:'The ESP8266 is a low-cost Wi-Fi microcontroller with an 80/160 MHz Tensilica core and a full TCP/IP stack. Boards like the NodeMCU and Wemos D1 Mini made it the chip that started the hobby IoT boom.',
+          uses:['Wi-Fi connected sensors and switches','Web servers and REST clients on the chip itself','MQTT nodes for home automation','Adding Wi-Fi to an existing Arduino project via AT commands'],
+          principle:'The single core runs both the Wi-Fi stack and user code; the SDK schedules radio events between your loop iterations. It connects to an access point (or creates one), then exchanges data over TCP/UDP sockets that libraries wrap as HTTP or MQTT.',
+          projects:['Wi-Fi relay controlled from a phone','MQTT temperature logger with DHT11','Wi-Fi clock synced by NTP']
+        },
+        'ESP32CAM':{
+          explanation:'The ESP32-CAM combines an ESP32 with an OV2640 2-megapixel camera and a microSD slot on one tiny board. It can capture stills, stream MJPEG video over Wi-Fi and even run light-weight face detection.',
+          uses:['Wi-Fi security and doorbell cameras','Time-lapse photography to SD card','Simple computer-vision experiments','QR-code and object snapshot projects'],
+          principle:'The camera sensor delivers JPEG frames over a parallel bus into the ESP32 PSRAM; firmware serves them as an MJPEG HTTP stream or saves them to SD. Programming requires an external USB-serial adapter since the board has no USB port.',
+          projects:['Wi-Fi door spy camera','Bird-feeder time-lapse recorder','Number-plate snapshot logger']
+        },
+        'Bluetooth 3.0 stereo audio receiver module':{
+          explanation:'This module receives stereo audio streamed from a phone or PC over Bluetooth A2DP and outputs analog line-level audio. It turns any amplifier or old speaker system into a wireless one.',
+          uses:['Upgrading old hi-fi systems to Bluetooth','Wireless speaker builds with a PAM8403','Car audio auxiliary input modernisation','Headphone-jack replacement in DIY devices'],
+          principle:'An integrated Bluetooth SoC pairs with the source device, receives compressed audio over the A2DP profile, decodes it and feeds an internal stereo DAC. The resulting analog left/right signals only need an amplifier and speakers.',
+          projects:['Bluetooth bookshelf speaker conversion','Retro radio with hidden Bluetooth','Wireless workshop announcement speaker']
+        },
+        'Arduino Uno':{
+          explanation:'The Arduino Uno is the standard beginner microcontroller board, based on the ATmega328P at 16 MHz with 14 digital and 6 analog pins. Its huge ecosystem of shields, libraries and tutorials makes it the default starting point for electronics.',
+          uses:['Learning programming and electronics','Reading sensors and driving actuators','Prototyping before designing custom PCBs','Running the enormous library of shield add-ons'],
+          principle:'The ATmega328P runs your compiled sketch from flash; a bootloader lets the USB-serial chip upload new code without a programmer. setup() runs once, loop() repeats forever, and library calls translate to reads and writes of the chip peripherals.',
+          projects:['Ultrasonic distance meter with LCD','Automatic plant-watering system','Line-following robot']
+        },
+        'Arduino Due':{
+          explanation:'The Arduino Due is a 3.3 V board built on the 32-bit SAM3X8E ARM Cortex-M3 running at 84 MHz, with 54 digital pins, 12 analog inputs and two true analog outputs (DACs). It offers far more speed and memory than AVR-based Arduinos.',
+          uses:['Computation-heavy projects like audio processing','Projects needing many pins simultaneously','True analog waveform output via the DACs','High-speed data acquisition'],
+          principle:'The ARM core executes at 84 MHz with 96 KB SRAM, and peripherals are accessed through the same Arduino API recompiled for ARM. All pins are strictly 3.3 V — connecting 5 V signals will damage it, so level shifters are needed with 5 V modules.',
+          projects:['Digital audio synthesizer using the DAC','Multi-axis CNC motion test rig','Fast oscilloscope-style ADC logger']
+        },
+        'Arduino Mega':{
+          explanation:'The Arduino Mega 2560 uses the ATmega2560 with 54 digital pins, 16 analog inputs, 4 hardware serial ports and 256 KB flash. It is the board to reach for when a project outgrows the Uno pin count or memory.',
+          uses:['Projects with many sensors and outputs at once','3D-printer and CNC controllers (RAMPS shield)','Driving multiple serial devices simultaneously','Large LED matrix and display projects'],
+          principle:'Functionally identical to an Uno — bootloader, setup()/loop(), same IDE — but the larger ATmega2560 provides four times the flash, more RAM and many more peripherals, so bigger sketches and pin-hungry shields fit comfortably.',
+          projects:['RAMPS-based 3D printer controller','Home greenhouse with 20+ sensors','MIDI organ pedalboard scanner']
+        },
+        'ESP32':{
+          explanation:'The ESP32 is a dual-core 240 MHz microcontroller with built-in Wi-Fi and Bluetooth (Classic + BLE), plentiful GPIO, ADCs, DACs, touch inputs and deep-sleep modes measured in microamps. It is the workhorse of modern IoT prototyping.',
+          uses:['Wi-Fi and Bluetooth IoT devices','Battery projects using deep sleep','Web-served dashboards from the chip itself','Audio, camera and touch-interface experiments'],
+          principle:'Two Xtensa cores share RAM and peripherals under FreeRTOS: typically one core handles the radio stack while your application runs on the other. Radio, sleep domains and peripherals are managed by the SDK so Arduino-style code gains wireless features with a few library calls.',
+          projects:['ESP32 web-radio streamer','BLE beacon attendance tracker','Solar-powered weather station with deep sleep']
+        },
+        'Arduino mini pro':{
+          explanation:'The Arduino Pro Mini is a stamp-sized ATmega328P board with no USB circuitry, available in 5 V/16 MHz and 3.3 V/8 MHz versions. Its small size and low idle current make it ideal for permanent, embedded and battery installations.',
+          uses:['Embedding permanently inside finished projects','Low-power battery-operated devices','Wearables and space-constrained builds','Cheap dedicated controllers for single tasks'],
+          principle:'Identical firmware behaviour to an Uno, but programming happens through a 6-pin serial header using an external USB-serial adapter (watch the DTR/reset connection). Removing the regulator and power LED can push sleep current to a few microamps.',
+          projects:['Coin-cell door sensor','Model railway signal controller','Hidden RGB mood lamp driver']
+        },
+        'Arduino lilypad':{
+          explanation:'The Arduino LilyPad is a round, sewable ATmega328-based board designed for e-textiles. Its large petal pads are stitched into fabric with conductive thread instead of soldered wiring.',
+          uses:['Light-up and interactive clothing','Soft-circuit craft and education projects','Wearable sensors (motion, temperature)','Costume and cosplay electronics'],
+          principle:'Conductive thread forms the circuit traces, connecting the LilyPad petals to sewable LEDs, sensors and battery holders; the ATmega runs ordinary Arduino sketches. Designs must keep thread paths from crossing and use snap fasteners where washing is needed.',
+          projects:['Turn-signal cycling jacket','Heartbeat-glow hoodie','Fabric piano with capacitive patches']
+        },
+        'STM32F103C8T6':{
+          explanation:'The STM32F103C8T6 "Blue Pill" board carries a 72 MHz ARM Cortex-M3 with 64-128 KB flash, 20 KB RAM and rich peripherals (USB, CAN, timers, dual ADCs) for a very low price. It is a favourite step up from 8-bit Arduinos.',
+          uses:['32-bit projects on a tiny budget','USB device experiments','CAN-bus and industrial protocol learning','Precise motor control using advanced timers'],
+          principle:'The Cortex-M3 executes from internal flash with peripherals on APB buses; programming is via ST-Link/SWD or a serial bootloader, and Arduino-core, STM32Cube or bare-register styles all work. Its timers can generate synchronized PWM far beyond AVR capability.',
+          projects:['USB volume-knob peripheral','CAN-bus car data sniffer','Brushless gimbal motor controller']
+        },
+        'SIM800L':{
+          explanation:'The SIM800L is a 2G GSM/GPRS modem module that gives a project phone capability: SMS, voice calls and mobile data over the 2G network using a standard SIM card. It needs a solid 3.4-4.4 V supply able to deliver 2 A bursts.',
+          uses:['SMS alerts from remote equipment','Calling or texting on alarm conditions','GPRS data upload where no Wi-Fi exists','Remote control of devices by SMS commands'],
+          principle:'A microcontroller talks to the module over serial using AT commands ("AT+CMGS" sends an SMS). The module registers on the cellular network like a phone, and radio bursts draw amp-level current spikes, which is why a big capacitor and stout supply are essential. Note that 2G networks are shut down in some countries.',
+          projects:['SMS-based water-pump controller','Car GPS tracker with SMS position reports','Power-failure SMS alarm']
+        },
+        'PAM8403':{
+          explanation:'The PAM8403 is a 3 W per channel stereo class-D audio amplifier that runs from 5 V and needs no heat sink. It turns a tiny board into a complete speaker amplifier with about 90 percent efficiency.',
+          uses:['Small powered speakers','Adding sound to microcontroller projects','Portable and USB-powered audio gadgets','Intercom and announcement speakers'],
+          principle:'The audio signal is compared with a high-frequency triangle wave to produce PWM switching of the output transistors; the speaker inductance and a small filter average the pulses back into audio. Because the transistors are either fully on or off, very little power is wasted as heat.',
+          projects:['Bluetooth speaker with the BT receiver module','Retro arcade cabinet sound','Desk notification speaker for a Pi']
+        },
+        'ISD1820':{
+          explanation:'The ISD1820 is a voice recorder and playback module with an on-board microphone, speaker driver and up to about 10-20 seconds of storage. Recording and playback work stand-alone with buttons or under microcontroller control.',
+          uses:['Recordable greeting and message devices','Talking toys and greeting cards','Voice prompts in vending or door systems','Sound-effect playback triggered by sensors'],
+          principle:'Audio from the microphone is sampled and stored directly in the chip on multi-level non-volatile memory cells — no external memory or code needed. Pulling REC high records; PLAYE or PLAYL replays the clip through the built-in amplifier to a small speaker.',
+          projects:['Doorbell that speaks a custom message','Motion-triggered Halloween scare box','Talking parrot toy repeat-back']
+        },
+        'LM393':{
+          explanation:'This sound sensor module pairs an electret microphone with an LM393 comparator, giving a digital output that fires when sound exceeds a threshold set by the on-board potentiometer. The LM393 itself is a dual voltage comparator IC.',
+          uses:['Clap and knock detection','Sound-activated lighting','Noise-level alarms','Wake-on-sound triggers for recorders'],
+          principle:'The microphone converts sound pressure to a small voltage that is amplified and fed to the comparator, which compares it with the potentiometer threshold; louder sound flips the digital output. It detects loudness only — it cannot recognise words or record audio.',
+          projects:['Double-clap lamp switch','Baby-cry notifier','Noise-level traffic light for a classroom']
+        },
+        'Sound detection sensor module':{
+          explanation:'A sound detection module contains a microphone, amplifier and comparator that output a digital pulse when ambient sound crosses an adjustable threshold. Some versions add an analog output of the raw microphone level.',
+          uses:['Detecting claps, knocks and bangs','Triggering cameras or lights by sound','Simple security listening nodes','Measuring rough loudness with the analog pin'],
+          principle:'Sound waves vibrate the electret capsule diaphragm, changing its capacitance and generating a signal that is amplified; a comparator digitises it against the trim-pot threshold, giving a clean interrupt-friendly pulse for a microcontroller.',
+          projects:['Knock-pattern secret door lock','Sound-reactive LED strip','Automatic hush monitor for a library']
+        },
+        'ADXL345':{
+          explanation:'The ADXL345 is a 3-axis digital accelerometer measuring up to ±16 g with 13-bit resolution over I2C or SPI. It detects orientation, motion, taps and free-fall with built-in interrupt logic.',
+          uses:['Tilt and orientation sensing','Step counting and activity tracking','Tap and double-tap input detection','Free-fall detection for drop protection'],
+          principle:'A micro-machined polysilicon mass on springs shifts under acceleration, changing differential capacitance that on-chip electronics convert to a digital reading per axis. Gravity appears as a constant 1 g vector, so the tilt angle can be computed from the axis readings.',
+          projects:['Digital spirit level','Gesture-controlled game paddle','Package drop-and-shock logger']
+        },
+        'HCR04':{
+          explanation:'The HC-SR04 ultrasonic module measures distance from about 2 cm to 4 m by timing sound-wave echoes. Its trigger/echo pin interface works with virtually any microcontroller.',
+          uses:['Obstacle detection for robots','Liquid- and bin-level measurement','Parking distance sensing','Presence and pass-through detection'],
+          principle:'A 10 µs trigger pulse makes the module emit an 8-cycle 40 kHz ultrasonic burst; the echo pin then goes high until the reflection returns. Distance equals the echo duration times the speed of sound divided by two.',
+          projects:['Water-tank level monitor','Obstacle-avoiding robot car','Ultrasonic theremin musical instrument']
+        },
+        'RC522':{
+          explanation:'The RC522 is a 13.56 MHz RFID reader/writer module for MIFARE cards and key fobs, communicating over SPI. Each tag carries a unique ID plus a small amount of writable, sector-protected memory.',
+          uses:['Access control by card or fob','Attendance and check-in systems','Inventory tagging','Interactive exhibits triggered by tags'],
+          principle:'The reader coil emits a 13.56 MHz field that powers the passive tag by induction; the tag answers by modulating its load on that field. The module handles the ISO 14443 protocol and hands the tag UID and memory blocks to the microcontroller over SPI.',
+          projects:['RFID door lock with servo bolt','Employee attendance logger to SD card','Toy figurine recognition game']
+        },
+        'DHT11':{
+          explanation:'The DHT11 measures temperature (0-50 °C, ±2 °C) and relative humidity (20-90 %, ±5 %) and reports both digitally over a single wire. It is slow (one reading per second) but extremely easy to use.',
+          uses:['Room climate monitoring','Greenhouse and terrarium control','Weather-station basics','Humidity alarms for storage areas'],
+          principle:'A resistive humidity element and an NTC thermistor are read by a small on-board controller, which transmits 40 bits of calibrated data using precisely timed pulses on the data line. The DHT22 is the more accurate, wider-range upgrade with the same interface.',
+          projects:['LCD room thermometer/hygrometer','Automatic bathroom exhaust fan','IoT climate dashboard with ESP8266']
+        },
+        'IR infrared sensor module':{
+          explanation:'This reflective infrared module contains an IR LED, photodiode and comparator, outputting LOW when an object reflects IR back within an adjustable range of a few centimetres to about 30 cm. Dark or matte objects reflect less and are detected at shorter range.',
+          uses:['Obstacle detection for robots','Line following (facing downward)','Object counting on conveyors','Touch-free switches'],
+          principle:'The IR LED continuously emits; a nearby surface reflects some light onto the photodiode, raising its signal above the potentiometer threshold, and the comparator snaps the digital output. Ambient sunlight contains IR and can cause false triggering outdoors.',
+          projects:['Line-follower robot sensor pair','Automatic dustbin lid opener','Product counter for a mini conveyor']
+        },
+        'Neo 6M GPS module':{
+          explanation:'The NEO-6M is a GPS receiver module that outputs position, altitude, speed and precise time over serial UART. With a clear sky view it fixes location to within a few metres.',
+          uses:['Vehicle and asset tracking','Geotagging data logs','Precise time source for clocks','Navigation for drones and rovers'],
+          principle:'The receiver correlates spread-spectrum signals from multiple GPS satellites, computing distance to each from signal travel time and solving for latitude, longitude, altitude and clock error. Results stream out as NMEA text sentences at 9600 baud that libraries like TinyGPS parse.',
+          projects:['GPS bicycle trip logger to SD card','Car tracker with SIM800L SMS reports','Sunrise-aware garden light timer']
+        },
+        'RF 315 and 433 MHZ module':{
+          explanation:'These are simple ASK/OOK radio transmitter and receiver pairs operating at 315 or 433 MHz. They send one-way data at low rates over tens of metres for pennies.',
+          uses:['Wireless remote switches','Remote sensor data reporting','Cloning/learning simple RF remotes','Wireless doorbells and alarms'],
+          principle:'The transmitter switches its carrier on and off to represent bits (on-off keying); the regenerative or superheterodyne receiver detects carrier presence and reproduces the bit stream. Because the link is noisy and one-way, libraries such as VirtualWire/RadioHead add addressing and checksums.',
+          projects:['Wireless letterbox notifier','Remote weather sensor to indoor display','RF-controlled power socket']
+        },
+        'PIR motion sensor module':{
+          explanation:'A PIR (passive infrared) module such as the HC-SR501 detects motion of warm bodies up to about 7 m away and raises its output pin for an adjustable time. It senses change in received heat, not distance or position.',
+          uses:['Automatic lights and fans','Intruder and presence alarms','Wildlife camera triggering','Occupancy-based energy saving'],
+          principle:'A pyroelectric element behind a segmented Fresnel lens sees the room as many zones; a moving warm body shifts infrared energy between zones, generating a small signal that the on-board chip amplifies, compares and stretches into a clean digital pulse.',
+          projects:['Staircase auto-light','ESP32 intruder alert with photo capture','Halloween motion-triggered prop']
+        },
+        'AMS1117 3.3 XJS68 based regulator module':{
+          explanation:'This breakout module carries an AMS1117-3.3 regulator with its input and output filter capacitors already fitted, giving a ready-to-use 3.3 V rail from a 4.5-12 V input at up to about 800 mA continuous.',
+          uses:['Powering 3.3 V sensors from 5 V systems','Breadboard 3.3 V supply rail','Feeding ESP-01 modules that USB adapters cannot power','Point-of-load regulation in project boxes'],
+          principle:'The AMS1117 low-dropout regulator compares its output against an internal reference and continuously adjusts a pass transistor, while the on-board capacitors stabilise the feedback loop and suppress noise. Excess voltage is dropped as heat, so keep the input-output difference modest.',
+          projects:['ESP-01 programming jig supply','3.3 V rail for an nRF24 radio','Sensor node power section']
+        },
+        '3.7 v lithium battery charging module':{
+          explanation:'This charger module (typically TP4056-based, with USB input) safely charges a single 3.7 V lithium cell to 4.2 V at up to 1 A. Versions with protection also guard the cell against over-discharge and short circuit.',
+          uses:['Recharging 18650 and LiPo cells over USB','Building DIY power banks','Adding recharge ports to portable projects','Solar charging with modest panels'],
+          principle:'The TP4056 performs constant-current then constant-voltage charging, tapering off and terminating at 4.2 V, with LEDs showing charge status. Protected versions add a DW01 supervisor and MOSFET switch that disconnect the cell outside safe voltage or current limits.',
+          projects:['DIY USB power bank','Rechargeable LED lantern','Solar-charged ESP32 sensor node']
+        },
+        'SD card reader module':{
+          explanation:'An SD/microSD card module connects a memory card to a microcontroller over SPI, adding gigabytes of removable storage for logs, audio, images and configuration files.',
+          uses:['Data logging of sensor readings','Storing audio and image assets','Configuration files for devices','Transferring recorded data to a PC'],
+          principle:'SD cards natively speak an SPI mode: the microcontroller issues block read/write commands over MOSI/MISO/SCK/CS, and a filesystem library (FAT16/FAT32) organises the raw blocks into normal files a computer can read. Cards are 3.3 V devices, so modules include level shifting or a regulator.',
+          projects:['GPS track logger','Temperature history recorder for a fridge','WAV sound-effect player']
+        },
+        'Power bank module':{
+          explanation:'A power bank module combines lithium-cell charging circuitry with a 5 V boost converter and USB output, turning bare 3.7 V cells into a complete USB power source. Many include charge-level LEDs and auto power-off.',
+          uses:['Building custom-capacity power banks','5 V portable supply for Arduino/ESP projects','UPS-style backup for small devices','Reusing recycled laptop 18650 cells'],
+          principle:'One section charges the cell (CC/CV to 4.2 V) while a switching boost converter steps the 3.0-4.2 V cell voltage up to a regulated 5 V for the USB port. An inductor stores energy each switching cycle and releases it at the higher voltage; load detection turns the boost off when nothing is drawing power.',
+          projects:['18650 solar power bank','Portable phone charger in a custom case','Always-on 5 V supply with battery backup']
+        },
+        'LM2003 based servo motor driver':{
+          explanation:'This driver board is built around a 2003-type high-voltage, high-current Darlington array (as in the ULN2003) with seven 500 mA open-collector channels and built-in flyback diodes. Such boards are most commonly used to drive the 28BYJ-48 geared stepper motor.',
+          uses:['Driving 28BYJ-48 unipolar stepper motors','Switching relays and solenoids','Driving lamps and LED clusters','Buffering microcontroller outputs to heavier loads'],
+          principle:'Each channel is a Darlington transistor pair giving very high current gain, so a logic-level input saturates a 500 mA output that sinks current through a motor winding. Energising the four stepper windings in sequence rotates the rotor one small step at a time; internal diodes absorb the inductive kickback.',
+          projects:['Automated curtain opener with 28BYJ-48','Rotating display turntable','Four-relay switching board']
+        },
+        'DRV8837':{
+          explanation:'The DRV8837 is a compact single H-bridge module for one brushed DC motor or another inductive load. Its motor supply operates from 0 to 11 V, its logic supply from 1.8 to 7 V, and the IC supports up to 1.8 A maximum drive current subject to board cooling and thermal limits.',
+          uses:['Driving one small brushed DC motor in either direction','PWM speed control from a microcontroller','Operating solenoids, latching relays and other inductive loads','Low-voltage battery-powered motion control'],
+          principle:'Four internal N-channel MOSFETs form an H-bridge. IN1 and IN2 select forward drive, reverse drive, braking or coast, while PWM changes average motor voltage and speed. The driver includes sleep, overcurrent, undervoltage and thermal protection.',
+          projects:['11 V miniature DC-motor controller','Battery-powered camera slider','Smart-lock actuator']
+        },
+        'DRV8833':{
+          explanation:'The DRV8833 is a dual H-bridge motor-driver module that can run two brushed DC motors or one bipolar stepper motor from a 2.7 to 10.8 V motor supply. Depending on IC package and thermal design, each bridge supports up to 1.5 A RMS and 2 A peak.',
+          uses:['Independent direction and PWM speed control for two DC motors','Driving one bipolar stepper motor','Differential-drive robots','Operating solenoids and other inductive loads'],
+          principle:'Two MOSFET H-bridges reverse current through two loads or the two windings of a stepper motor. Four logic inputs control direction, braking and PWM; current regulation, fault reporting, sleep mode and protection circuitry help prevent electrical and thermal damage.',
+          projects:['Two-wheel robot motor controller','Mini plotter stepper driver','Dual fan or pump controller']
+        },
+        'VL53L0X':{
+          explanation:'The VL53L0X is a Time-of-Flight laser-ranging module that measures absolute distance up to about 2 m and reports readings over I2C. It integrates a Class 1 invisible 940 nm emitter, a single-photon detector array and on-chip ranging processing.',
+          uses:['Short-range obstacle and proximity detection','Robot wall following and navigation','Liquid-level and bin-fill sensing','Touchless controls and simple gesture detection'],
+          principle:'The module emits short pulses of invisible infrared light and measures the photons returning from the target. Its FlightSense processing derives distance from the light travel time, making readings less dependent on target reflectance than simple reflected-intensity sensors.',
+          projects:['ToF obstacle-avoiding robot','Touchless hand-distance controller','Contact-free tank-level monitor']
+        },
+        'SSD 1306':{
+          explanation:'The SSD1306 drives the ubiquitous 0.96-inch 128x64 monochrome OLED display, usually over I2C. Each pixel emits its own light, giving crisp high-contrast text and graphics with no backlight.',
+          uses:['Status displays for sensors and IoT nodes','Menus and small user interfaces','Tiny gauges, graphs and animations','Wearable and battery devices (dark pixels use no power)'],
+          principle:'The SSD1306 chip holds a 1-bit-per-pixel frame buffer in its RAM and continuously scans it out to the OLED matrix, controlling the current through each self-emissive pixel. The microcontroller only sends drawing commands and buffer updates over I2C, so even slow MCUs can run it.',
+          projects:['Desk clock with weather from Wi-Fi','Crypto/stock ticker display','Heart-rate monitor readout']
+        },
+        'WTV020M01':{
+          explanation:'The WTV020-SD-16P is an audio playback module that plays WAV/AD4 files from a microSD card (up to 1 GB, up to 512 tracks) through a 16-bit DAC or PWM output. It runs from 2.5-3.6 V and can be controlled by buttons or a two-wire serial link.',
+          uses:['Sound effects in toys and props','Voice prompts for appliances and kiosks','Doorbells with custom sounds','Simple MP3-player-style gadgets'],
+          principle:'Audio files converted to 4-bit ADPCM (AD4) or WAV are read from the SD card and decoded to the DAC output; in MP3 mode buttons select next/previous/play-pause, while serial mode lets a microcontroller pick any numbered track. Files must be named 0000.ad4, 0001.ad4 and so on.',
+          projects:['Talking doorbell','Museum-exhibit narration button','Sound-effect box for tabletop games']
+        },
+        'QMC5883L':{
+          explanation:'The QMC5883L (on GY-271 boards, marked DB5883) is a 3-axis digital magnetometer used as an electronic compass. It measures magnetic field strength on X, Y and Z axes over I2C.',
+          uses:['Compass heading for robots and drones','Detecting nearby magnets or ferrous metal','Orientation sensing with an IMU','Door/position sensing via magnet fields'],
+          principle:'Magneto-resistive sensor elements change resistance in proportion to the magnetic field along each axis; the chip digitises the three components, and heading is computed as the arctangent of the horizontal X and Y readings after calibrating away nearby magnetic offsets.',
+          projects:['Digital compass with OLED needle','GPS + compass return-to-home rover','Magnetic anomaly metal detector']
+        },
+        'MPU-6050':{
+          explanation:'The MPU-6050 combines a 3-axis accelerometer and 3-axis gyroscope with an on-chip Digital Motion Processor, all readable over I2C. It is the standard six-axis IMU for motion and balance projects.',
+          uses:['Self-balancing robots and gimbals','Drone flight stabilisation','Gesture and motion capture','Vibration and tilt monitoring'],
+          principle:'MEMS structures sense acceleration (spring-mounted mass) and rotation rate (Coriolis effect on a vibrating element). Fusing both — gyro for fast changes, accelerometer for gravity reference — with a complementary or Kalman filter yields stable pitch and roll angles.',
+          projects:['Two-wheel self-balancing robot','Camera gimbal stabiliser','Air-mouse pointer']
+        },
+        'BH1750':{
+          explanation:'The BH1750 is a digital ambient-light sensor that reports illuminance directly in lux over I2C, from 1 to 65535 lx. Unlike an LDR, it gives calibrated, human-eye-weighted readings.',
+          uses:['Automatic display and lighting brightness','Daylight harvesting and grow-light control','Weather and environment logging','Lux metering for photography'],
+          principle:'A photodiode with a response close to the human eye feeds an integrating ADC; the chip converts the accumulated charge into a 16-bit lux value, with selectable resolution and integration time for dim or bright conditions.',
+          projects:['Auto-dimming bedside lamp','Greenhouse light logger','Curtain controller that closes at dusk']
+        },
+        'SW-420':{
+          explanation:'The SW-420 is a vibration sensor module: a spring-based tube switch plus comparator that pulses its digital output when the module is shaken, knocked or tilted sharply. Sensitivity is set by an on-board potentiometer.',
+          uses:['Tamper and theft alarms','Machine vibration detection','Earthquake-toy and impact experiments','Wake-on-movement triggers'],
+          principle:'Inside the sealed tube, a conductive spring surrounds a centre post; vibration makes the spring momentarily touch or leave the post, changing contact resistance. The LM393 comparator converts these fluctuations into clean digital pulses a microcontroller can count or use as an interrupt.',
+          projects:['Bicycle anti-theft vibration alarm','Washing-machine finished notifier','Parcel rough-handling detector']
+        }
+      };
+
+      const componentDetails=Object.assign({},sensorDetails,moreDetails);
+      const detailKeys=Object.keys(componentDetails).sort(function(a,b){return b.length-a.length;});
+      const detailIndex={};
+      detailKeys.forEach(function(key){detailIndex[key.toLowerCase()]=componentDetails[key];});
+      function getDetails(name){
+        const normalized=cleanText(name).toLowerCase();
+        if(detailIndex[normalized])return detailIndex[normalized];
+        for(let i=0;i<detailKeys.length;i++){
+          if(normalized.indexOf(detailKeys[i].toLowerCase())===0)return componentDetails[detailKeys[i]];
+        }
+        return null;
+      }
+
+      const categoryUses={
+        'Transistor':['Switching electronic loads','Amplifying current or signals','Driving LEDs, relays and other circuits'],
+        'Diode':['Rectifying AC to DC','Reverse-polarity protection','Clamping and steering electrical signals'],
+        'Mosfet':['Efficient power switching','Motor, LED and load control','Power conversion and level shifting'],
+        'Charging IC':['Controlling battery charge current','Battery-powered projects','Charge-status and safety management'],
+        'Volatge Regulator':['Providing a stable supply voltage','Powering sensitive electronics','Reducing a higher DC voltage'],
+        'Darlington array IC':['Driving relays, motors and lamps','Interfacing logic with higher-current loads','Multi-channel switching'],
+        'Voltage Comparator Ic':['Comparing two voltage levels','Threshold and zero-crossing detection','Sensor and control circuits'],
+        'Opamp':['Signal amplification and conditioning','Active filters and oscillators','Audio and sensor circuits'],
+        'Timer Ic':['Generating delays and pulses','Oscillators, clocks and LED flashers','Pulse-width modulation'],
+        'Optocoupler':['Electrical isolation','Protecting low-voltage control circuits','Isolated signal switching'],
+        'Microcontroller Boards':['Prototyping embedded systems','Reading sensors and controlling outputs','Automation, robotics and IoT projects'],
+        'Sensors':['Detecting or measuring physical conditions','Monitoring and automation','Providing feedback to a controller'],
+        'Modules':['Rapid electronic prototyping','Adding a ready-made hardware function','Connecting sensors, communication or output devices']
+      };
+
+      function cleanText(text){return text.replace(/\s+/g,' ').trim();}
+      function splitItem(raw,category){
+        const separators=[/\s*-->\s*/,/\s*\u2192\s*/,/\s+-\s+/];
+        let parts=[raw];
+        for(const separator of separators){
+          parts=raw.split(separator);
+          if(parts.length>1)break;
+        }
+        const name=cleanText(parts.shift()||raw);
+        const recorded=cleanText(parts.join(' - '));
+        return {
+          name:name,
+          description:recorded||('This catalogue lists '+name+' under '+category+'. No additional specification note has been recorded yet.')
+        };
+      }
+
+      const components=[];
+      sections.forEach(function(section){
+        const heading=section.querySelector('h2');
+        const category=cleanText(Array.from(heading.childNodes).filter(function(node){return node.nodeType===Node.TEXT_NODE;}).map(function(node){return node.textContent;}).join(' ')).replace(/^[^A-Za-z0-9]+/,'');
+        const categoryOption=document.createElement('option');
+        categoryOption.value=section.id;
+        categoryOption.textContent=category;
+        categorySelect.appendChild(categoryOption);
+        section.querySelectorAll('ul.items li').forEach(function(li,index){
+          const raw=cleanText(li.textContent);
+          const parsed=splitItem(raw,category);
+          components.push({
+            id:section.id+'-'+index,
+            categoryId:section.id,
+            category:category,
+            name:parsed.name,
+            description:parsed.description,
+            raw:raw,
+            link:li.querySelector('a')?li.querySelector('a').href:'',
+            element:li
+          });
+        });
+      });
+
+      function matchingComponents(){
+        const term=search.value.toLowerCase().trim();
+        return components.filter(function(item){
+          return (!categorySelect.value||item.categoryId===categorySelect.value)&&
+            (!term||(item.name+' '+item.raw+' '+item.category).toLowerCase().includes(term));
+        });
+      }
+
+      function openList(){options.hidden=false;search.setAttribute('aria-expanded','true');}
+      function closeList(){options.hidden=true;search.setAttribute('aria-expanded','false');activeIndex=-1;}
+
+      function renderOptions(){
+        const found=matchingComponents();
+        options.innerHTML='';
+        activeIndex=-1;
+        if(!found.length){
+          const empty=document.createElement('li');
+          empty.className='combo-empty';
+          empty.textContent='No matching components';
+          options.appendChild(empty);
+        }else{
+          found.slice(0,40).forEach(function(item){
+            const option=document.createElement('li');
+            option.className='combo-option';
+            option.setAttribute('role','option');
+            option.dataset.id=item.id;
+            const main=document.createElement('span');
+            main.className='combo-option-main';
+            const name=document.createElement('span');
+            name.className='combo-option-name';
+            name.textContent=item.name;
+            main.appendChild(name);
+            const sensorInfo=getDetails(item.name);
+            if(sensorInfo){
+              const summary=document.createElement('span');
+              summary.className='combo-option-description';
+              summary.textContent=sensorInfo.explanation;
+              main.appendChild(summary);
+            }
+            const category=document.createElement('small');
+            category.textContent=item.category;
+            option.append(main,category);
+            option.addEventListener('mousedown',function(event){event.preventDefault();selectItem(item);});
+            options.appendChild(option);
+          });
+        }
+        openList();
+      }
+
+      function moveActive(direction){
+        const rows=Array.from(options.querySelectorAll('.combo-option'));
+        if(!rows.length)return;
+        activeIndex=(activeIndex+direction+rows.length)%rows.length;
+        rows.forEach(function(row,index){row.classList.toggle('active',index===activeIndex);});
+        rows[activeIndex].scrollIntoView({block:'nearest'});
+      }
+
+      function selectItem(item){
+        components.forEach(function(component){component.element.classList.toggle('selected',component===item);});
+        search.value=item.name;
+        categorySelect.value=item.categoryId;
+        closeList();
+        const sensorInfo=getDetails(item.name);
+        const uses=sensorInfo?sensorInfo.uses:(categoryUses[item.category]||['Electronic prototyping and development']);
+        detail.className='detail-panel';
+        detail.innerHTML='';
+        const heading=document.createElement('div');
+        heading.className='detail-heading';
+        const titleWrap=document.createElement('div');
+        const category=document.createElement('span');
+        category.className='detail-category';
+        category.textContent=item.category;
+        const title=document.createElement('h2');
+        title.textContent=item.name;
+        titleWrap.append(category,title);
+        heading.appendChild(titleWrap);
+        const grid=document.createElement('div');
+        grid.className='detail-grid';
+        const about=document.createElement('div');
+        about.className='detail-block';
+        const aboutTitle=document.createElement('h3');
+        aboutTitle.textContent=sensorInfo?'About this item':'Details';
+        const aboutText=document.createElement('p');
+        aboutText.textContent=sensorInfo?sensorInfo.explanation:item.description;
+        about.append(aboutTitle,aboutText);
+        const useBlock=document.createElement('div');
+        useBlock.className='detail-block';
+        const useTitle=document.createElement('h3');
+        useTitle.textContent='Common uses';
+        const useList=document.createElement('ul');
+        uses.forEach(function(use){const li=document.createElement('li');li.textContent=use;useList.appendChild(li);});
+        useBlock.append(useTitle,useList);
+        grid.append(about,useBlock);
+        if(sensorInfo){
+          const principleBlock=document.createElement('div');
+          principleBlock.className='detail-block';
+          const principleTitle=document.createElement('h3');
+          principleTitle.textContent='Working principle';
+          const principleText=document.createElement('p');
+          principleText.textContent=sensorInfo.principle;
+          principleBlock.append(principleTitle,principleText);
+          const projectsBlock=document.createElement('div');
+          projectsBlock.className='detail-block';
+          const projectsTitle=document.createElement('h3');
+          projectsTitle.textContent='Example projects';
+          const projectsList=document.createElement('ul');
+          sensorInfo.projects.forEach(function(project){const li=document.createElement('li');li.textContent=project;projectsList.appendChild(li);});
+          projectsBlock.append(projectsTitle,projectsList);
+          grid.append(principleBlock,projectsBlock);
+          if(sensorInfo.driveMode){
+            const driveMode=sensorInfo.driveMode;
+            const driveModeBlock=document.createElement('div');
+            driveModeBlock.className='detail-block detail-block-wide drive-mode-block';
+            const driveModeTitle=document.createElement('h3');
+            driveModeTitle.textContent='BOOTSEL / RPI-RP2 drive mode';
+            const driveModeSummary=document.createElement('p');
+            driveModeSummary.textContent=driveMode.summary;
+            const stepsTitle=document.createElement('p');
+            stepsTitle.className='drive-mode-subtitle';
+            stepsTitle.textContent='How to enter drive mode';
+            const stepsList=document.createElement('ol');
+            driveMode.steps.forEach(function(step){const li=document.createElement('li');li.textContent=step;stepsList.appendChild(li);});
+            const usesTitle=document.createElement('p');
+            usesTitle.className='drive-mode-subtitle';
+            usesTitle.textContent='What drive mode is useful for';
+            const driveModeUses=document.createElement('ul');
+            driveMode.uses.forEach(function(use){const li=document.createElement('li');li.textContent=use;driveModeUses.appendChild(li);});
+            const driveModeNote=document.createElement('p');
+            driveModeNote.className='drive-mode-note';
+            driveModeNote.textContent=driveMode.note;
+            driveModeBlock.append(driveModeTitle,driveModeSummary,stepsTitle,stepsList,usesTitle,driveModeUses,driveModeNote);
+            grid.appendChild(driveModeBlock);
+          }
+          if(sensorInfo.limitation){
+            const limitation=sensorInfo.limitation;
+            const limitationBlock=document.createElement('div');
+            limitationBlock.className='detail-block detail-block-wide limitation-block';
+            const limitationTitle=document.createElement('h3');
+            limitationTitle.textContent=limitation.title;
+            const limitationSummary=document.createElement('p');
+            limitationSummary.textContent=limitation.summary;
+            const tableWrap=document.createElement('div');
+            tableWrap.className='table-wrap';
+            const table=document.createElement('table');
+            table.className='marking-table wind-table';
+            const thead=document.createElement('thead');
+            const headingRow=document.createElement('tr');
+            ['Wind speed','Possible pressure error','Apparent altitude error'].forEach(function(label){const th=document.createElement('th');th.textContent=label;headingRow.appendChild(th);});
+            thead.appendChild(headingRow);
+            const tbody=document.createElement('tbody');
+            limitation.rows.forEach(function(row){
+              const tr=document.createElement('tr');
+              row.forEach(function(value){const td=document.createElement('td');td.textContent=value;tr.appendChild(td);});
+              tbody.appendChild(tr);
+            });
+            table.append(thead,tbody);
+            tableWrap.appendChild(table);
+            const limitationNote=document.createElement('p');
+            limitationNote.className='limitation-note';
+            limitationNote.textContent=limitation.note;
+            const mitigationTitle=document.createElement('p');
+            mitigationTitle.className='limitation-subtitle';
+            mitigationTitle.textContent='How to reduce the error';
+            const mitigationList=document.createElement('ul');
+            limitation.mitigation.forEach(function(step){const li=document.createElement('li');li.textContent=step;mitigationList.appendChild(li);});
+            const sources=document.createElement('div');
+            sources.className='limitation-sources';
+            limitation.sources.forEach(function(source){
+              const link=document.createElement('a');
+              link.href=source[1];
+              link.target='_blank';
+              link.rel='noopener';
+              link.textContent=source[0]+' \u2197';
+              sources.appendChild(link);
+            });
+            limitationBlock.append(limitationTitle,limitationSummary,tableWrap,limitationNote,mitigationTitle,mitigationList,sources);
+            grid.appendChild(limitationBlock);
+          }
+        }
+        detail.append(heading,grid);
+        if(item.link){
+          const link=document.createElement('a');
+          link.className='detail-link';
+          link.href=item.link;
+          link.target='_blank';
+          link.rel='noopener';
+          link.textContent='Open datasheet / product page \u2197';
+          detail.appendChild(link);
+        }
+      }
+
+      search.addEventListener('focus',renderOptions);
+      search.addEventListener('input',renderOptions);
+      toggle.addEventListener('click',function(){
+        if(options.hidden){renderOptions();search.focus();}
+        else closeList();
+      });
+      categorySelect.addEventListener('change',function(){search.value='';renderOptions();search.focus();});
+      search.addEventListener('keydown',function(event){
+        if(event.key==='ArrowDown'){event.preventDefault();if(options.hidden)renderOptions();moveActive(1);}
+        else if(event.key==='ArrowUp'){event.preventDefault();moveActive(-1);}
+        else if(event.key==='Enter'&&activeIndex>=0){
+          event.preventDefault();
+          const row=options.querySelectorAll('.combo-option')[activeIndex];
+          const item=components.find(function(component){return component.id===row.dataset.id;});
+          if(item)selectItem(item);
+        }else if(event.key==='Escape'){closeList();}
+      });
+      document.addEventListener('click',function(event){if(!document.getElementById('component-combo').contains(event.target))closeList();});
+      components.forEach(function(item){
+        item.element.addEventListener('click',function(event){
+          if(event.target.closest('a'))return;
+          selectItem(item);
+          detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+        });
+      });
+
+      const requestedCategory=location.hash.slice(1);
+      if(requestedCategory&&sections.some(function(section){return section.id===requestedCategory;}))categorySelect.value=requestedCategory;
+    })();
+</script>
+</body>
+</html>
