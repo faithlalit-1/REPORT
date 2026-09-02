@@ -5,11 +5,11 @@ RECORD is a lightweight document library for HTML, text, SQL, Word, and Excel fi
 - **Local mode:** open `record.html` directly in Chrome or Edge and grant access to category folders through the File System Access API.
 - **Remote mode:** run `server.py` and access the same interface over HTTP/HTTPS. Files are then managed through an authenticated Flask API on the Raspberry Pi.
 
-The deployed instance is available at:
+The preferred deployed address is:
 
-`https://report.shitikanthay.co.in`
+`https://record.shitikanthay.co.in`
 
-The equivalent alias `https://record.shitikanthay.co.in` routes to the same application.
+The equivalent alias `https://report.shitikanthay.co.in` routes to the same application. `/login` is also supported and redirects to the main page after authentication.
 
 ## Features
 
@@ -64,7 +64,7 @@ Create a private `.env` file. It is intentionally ignored by Git:
 
 ```dotenv
 RECORD_USERNAME=choose-a-username
-RECORD_PASSWORD=choose-a-strong-password
+RECORD_PASSWORD='choose-a-strong-password'
 RECORD_PORT=8090
 ```
 
@@ -99,10 +99,12 @@ sudo journalctl -u record.service -n 100 --no-pager
 
 ### Cloudflare Tunnel
 
-`cloudflared-config.yml` documents the deployed ingress routes. The RECORD route forwards the public hostname to the loopback-only application:
+`cloudflared-config.yml` documents the deployed ingress routes. Both RECORD hostnames forward to the same loopback-only application:
 
 ```yaml
 - hostname: report.shitikanthay.co.in
+  service: http://localhost:8090
+- hostname: record.shitikanthay.co.in
   service: http://localhost:8090
 ```
 
@@ -142,6 +144,9 @@ File endpoints accept nested relative paths. The folder endpoint expects JSON su
 - **Authentication prompt repeats:** verify the username/password in `.env`, then restart `record.service`.
 - **502 from Cloudflare:** confirm `record.service` is active and listening on port 8090.
 - **Public hostname returns 404:** confirm its ingress rule appears before the final `http_status:404` rule.
+- **`DNS_PROBE_FINISHED_NXDOMAIN` on Windows:** verify public DNS with `nslookup record.shitikanthay.co.in 1.1.1.1`, then run `ipconfig /flushdns` from an Administrator terminal and restart the browser.
+- **Public DNS works through `1.1.1.1`, but Windows applications still cannot resolve it:** set the active adapter's DNS servers to `1.1.1.1` and `8.8.8.8`, then run `Clear-DnsClientCache`. This changes only DNS resolution on that Windows computer; it does not alter router DHCP reservations, reserved device addresses, Wi-Fi settings, or other devices. Restore automatic DNS with `Set-DnsClientServerAddress -InterfaceAlias "Wi-Fi" -ResetServerAddresses`.
+- **Test HTTPS independently of cached DNS:** run `curl.exe -4 -I --resolve record.shitikanthay.co.in:443:104.21.68.223 https://record.shitikanthay.co.in`. A `401 Unauthorized` response confirms that Cloudflare and RECORD are reachable and waiting for credentials.
 - **Uploads fail:** check file extension, request size, directory permissions, and service logs.
 - **Files disappear after switching tabs:** ensure the file was uploaded to the matching category and accepted extension.
 - **Local folder controls are unavailable:** use Chrome or Edge and open `record.html` from disk.
