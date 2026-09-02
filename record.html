@@ -580,9 +580,11 @@
       </div>
     </div>
     <div class="folder-row">
-      <label for="folderSelect">Upload folder</label>
+      <label for="folderSelect">Folder</label>
       <select id="folderSelect" aria-label="Choose upload folder"></select>
       <button id="newFolderBtn" type="button">New folder</button>
+      <button id="setDefaultFolderBtn" type="button">Set as default</button>
+      <button id="moveSelectedBtn" type="button" disabled>Move selected here</button>
       <span class="search-info" id="folderInfo">Files are grouped by folder</span>
     </div>
     <div class="search-row">
@@ -677,6 +679,8 @@
   const refreshBtn = document.getElementById("refreshBtn");
   const folderSelect = document.getElementById("folderSelect");
   const newFolderBtn = document.getElementById("newFolderBtn");
+  const setDefaultFolderBtn = document.getElementById("setDefaultFolderBtn");
+  const moveSelectedBtn = document.getElementById("moveSelectedBtn");
   const folderInfo = document.getElementById("folderInfo");
   const themeSel = document.getElementById("themeSel");
   const fontUp = document.getElementById("fontUp");
@@ -747,8 +751,8 @@
       re: /\.html?$/i, accept: ".html,.htm",
       read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
       editable: true,
-      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
-      selected: new Set()
+      handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
+      selected: new Set(), moveSelected: new Set()
     },
     text: {
       key: "text", label: "Text", dir: "text",
@@ -756,24 +760,24 @@
       accept: ".txt,.md,.markdown,.log,.csv,.json,.text,.sql,.xml,.yml,.yaml",
       read: async (f) => plainText(await f.text()), handleKey: "textDir",
       editable: true,
-      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
-      selected: new Set()
+      handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
+      selected: new Set(), moveSelected: new Set()
     },
     sql: {
       key: "sql", label: "SQL", dir: "sql",
       re: /\.sql$/i, accept: ".sql",
       read: async (f) => plainText(await f.text()), handleKey: "sqlDir",
       editable: true,
-      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
-      selected: new Set()
+      handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
+      selected: new Set(), moveSelected: new Set()
     },
     docx: {
       key: "docx", label: "Word", dir: "word",
       re: /\.docx$/i, accept: ".docx",
       read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "wordDir",
       editable: false,
-      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
-      selected: new Set()
+      handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
+      selected: new Set(), moveSelected: new Set()
     },
     excel: {
       key: "excel", label: "Excel", dir: "excel",
@@ -787,10 +791,15 @@
         return xlsxToText(await f.arrayBuffer());
       },
       handleKey: "excelDir", editable: false,
-      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
-      selected: new Set()
+      handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
+      selected: new Set(), moveSelected: new Set()
     }
   };
+  for (const col of Object.values(collections)) {
+    const savedFolder = localStorage.getItem("record-default-folder-" + col.key);
+    col.defaultFolder = savedFolder == null ? "__all__" : savedFolder;
+    col.folderFilter = col.defaultFolder;
+  }
   let active = collections.html;
 
   /* ---------- accessibility: theme + font ---------- */
@@ -925,11 +934,15 @@
   }
 
   function updateFolderOptions() {
-    const current = active.uploadFolder;
+    const current = active.folderFilter;
     folderSelect.innerHTML = "";
+    const allOption = document.createElement("option");
+    allOption.value = "__all__";
+    allOption.textContent = "All folders";
+    folderSelect.appendChild(allOption);
     const rootOption = document.createElement("option");
     rootOption.value = "";
-    rootOption.textContent = "/ (top level)";
+    rootOption.textContent = "No folder";
     folderSelect.appendChild(rootOption);
     for (const folder of active.folders) {
       const option = document.createElement("option");
@@ -937,11 +950,47 @@
       option.textContent = "  ".repeat(Math.max(0, pathParts(folder).length - 1)) + "↳ " + pathBase(folder);
       folderSelect.appendChild(option);
     }
-    active.uploadFolder = active.folders.includes(current) ? current : "";
-    folderSelect.value = active.uploadFolder;
-    folderInfo.textContent = active.uploadFolder
-      ? "Uploads go to /" + active.uploadFolder
-      : "Uploads go to the top level";
+    const currentIsValid = current === "__all__" || current === "" || active.folders.includes(current);
+    active.folderFilter = !active.loaded || currentIsValid ? current : "__all__";
+    if (active.loaded && active.defaultFolder !== "__all__" && active.defaultFolder !== "" &&
+        !active.folders.includes(active.defaultFolder)) {
+      active.defaultFolder = "__all__";
+      localStorage.setItem("record-default-folder-" + active.key, "__all__");
+    }
+    active.uploadFolder = active.folderFilter === "__all__" ? "" : active.folderFilter;
+    folderSelect.value = active.folderFilter;
+    updateFolderInfo();
+    updateDefaultFolderChrome();
+  }
+
+  function folderLabel(folder) {
+    if (folder === "__all__") return "All folders";
+    if (!folder) return "No folder";
+    return "/" + folder;
+  }
+
+  function updateDefaultFolderChrome() {
+    const isDefault = active.folderFilter === active.defaultFolder;
+    setDefaultFolderBtn.disabled = isDefault;
+    setDefaultFolderBtn.textContent = isDefault ? "Default folder" : "Set as default";
+    setDefaultFolderBtn.title = "Current default: " + folderLabel(active.defaultFolder);
+  }
+
+  function setDefaultFolder() {
+    active.defaultFolder = active.folderFilter;
+    localStorage.setItem("record-default-folder-" + active.key, active.defaultFolder);
+    updateDefaultFolderChrome();
+    showToast(folderLabel(active.defaultFolder) + " is now the default for the " + active.label + " tab.");
+  }
+
+  function updateFolderInfo() {
+    if (active.folderFilter === "__all__") {
+      folderInfo.textContent = "Searching all folders · uploads go to no folder";
+    } else if (active.folderFilter) {
+      folderInfo.textContent = "Showing /" + active.folderFilter + " · uploads and moves go here";
+    } else {
+      folderInfo.textContent = "Showing files with no folder · uploads and moves go here";
+    }
   }
 
   async function createFolder() {
@@ -975,11 +1024,78 @@
         await directoryAt(active.handle, path, true);
       }
       active.uploadFolder = path;
+      active.folderFilter = path;
       active.loaded = false;
       await listFiles();
       showToast("Created folder: /" + path);
     } catch (err) {
       showToast(err.message || "Could not create folder.");
+    }
+  }
+
+  async function moveSelectedFiles() {
+    const col = active;
+    const names = [...col.moveSelected];
+    if (!names.length) {
+      showToast("Tick one or more files in the list first.");
+      return;
+    }
+    const destination = col.uploadFolder ? "/" + col.uploadFolder : "No folder";
+    const label = names.length + " selected file" + (names.length === 1 ? "" : "s");
+    if (!window.confirm("Move " + label + " to " + destination + "?")) return;
+    moveSelectedBtn.disabled = true;
+    moveSelectedBtn.textContent = "Moving…";
+    try {
+      if (remoteMode) {
+        const response = await fetch("/api/move/" + encodeURIComponent(col.key), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files: names, folder: col.uploadFolder })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Could not move files");
+      } else {
+        if (!(await ensurePermission(col.handle, true))) throw new Error("Write permission denied");
+        const destinationHandle = await directoryAt(col.handle, col.uploadFolder, false);
+        const pending = [];
+        const destinationNames = new Set();
+        for (const name of names) {
+          if (pathDir(name) === col.uploadFolder) continue;
+          const sourceDir = await directoryAt(col.handle, pathDir(name), false);
+          const source = await sourceDir.getFileHandle(pathBase(name));
+          if (destinationNames.has(pathBase(name))) {
+            throw new Error("More than one selected file is named " + pathBase(name));
+          }
+          try {
+            await destinationHandle.getFileHandle(pathBase(name));
+            throw new Error("A file already exists at " + destination + "/" + pathBase(name));
+          } catch (err) {
+            if (!err || err.name !== "NotFoundError") throw err;
+          }
+          destinationNames.add(pathBase(name));
+          pending.push({ sourceDir, source });
+        }
+        for (const item of pending) {
+          const file = await item.source.getFile();
+          const target = await destinationHandle.getFileHandle(file.name, { create: true });
+          const writable = await target.createWritable();
+          await writable.write(file);
+          await writable.close();
+          await item.sourceDir.removeEntry(file.name);
+        }
+      }
+      const movedCount = names.filter(name => pathDir(name) !== col.uploadFolder).length;
+      col.moveSelected.clear();
+      col.loaded = false;
+      await listFiles();
+      showToast(movedCount
+        ? "Moved " + movedCount + " file" + (movedCount === 1 ? "" : "s") + " to " + destination + "."
+        : "Selected files are already in " + destination + ".");
+    } catch (err) {
+      showToast(err.message || "Could not move files.");
+    } finally {
+      moveSelectedBtn.textContent = "Move selected here";
+      updateMoveChrome();
     }
   }
 
@@ -1110,6 +1226,7 @@
     listEl.setAttribute("aria-label", active.label + " records");
     closeFilterDrop();
     updateFilterChrome();
+    updateMoveChrome();
     updateFolderOptions();
   }
 
@@ -1572,9 +1689,13 @@
     for (const n of [...col.selected]) {
       if (!records.some(r => r.name === n)) col.selected.delete(n);
     }
+    for (const n of [...col.moveSelected]) {
+      if (!records.some(r => r.name === n)) col.moveSelected.delete(n);
+    }
     if (active === col) {
       updateFolderOptions();
       updateFilterChrome();
+      updateMoveChrome();
       if (!filterDrop.hidden) renderFilterOptions();
       applySearch();
     }
@@ -1801,24 +1922,53 @@
     })();
   }
 
+  function recordsInSelectedFolder() {
+    if (active.folderFilter === "__all__") return active.records;
+    if (!active.folderFilter) return active.records.filter(rec => !pathDir(rec.name));
+    return active.records.filter(rec => {
+      const folder = pathDir(rec.name);
+      return folder === active.folderFilter || folder.startsWith(active.folderFilter + "/");
+    });
+  }
+
   function filteredRecords() {
-    if (!active.selected.size) return active.records;
-    return active.records.filter(r => active.selected.has(r.name));
+    const records = recordsInSelectedFolder();
+    if (!active.selected.size) return records;
+    return records.filter(r => active.selected.has(r.name));
+  }
+
+  function renderEmptyFolders(records) {
+    if (searchInput.value.trim() || active.selected.size) return;
+    const foldersWithFiles = new Set(records.map(rec => pathDir(rec.name)).filter(Boolean));
+    const visibleFolders = active.folderFilter === "__all__"
+      ? active.folders
+      : (active.folderFilter ? [active.folderFilter] : []);
+    for (const folder of visibleFolders) {
+      if (foldersWithFiles.has(folder)) continue;
+      const heading = document.createElement("li");
+      heading.className = "folder-heading";
+      heading.textContent = "▸ /" + folder + " (no files directly inside)";
+      listEl.appendChild(heading);
+    }
   }
 
   function applySearch() {
     const query = searchInput.value.trim();
     const records = filteredRecords();
+    const folderRecords = recordsInSelectedFolder();
     countPill.textContent = active.selected.size
-      ? records.length + " of " + active.records.length + " files"
+      ? records.length + " of " + folderRecords.length + " files"
       : records.length + (records.length === 1 ? " file" : " files");
 
     if (!records.length) {
       clearList();
       searchInfo.textContent = "";
+      renderEmptyFolders(records);
       const li = document.createElement("li");
       li.className = "empty";
-      li.textContent = "No files found in the " + active.dir + " folder yet.";
+      li.textContent = active.folders.length && !query && !active.selected.size
+        ? "No files found yet. Choose a folder above to upload files into it."
+        : "No files found in the " + active.dir + " folder yet.";
       listEl.appendChild(li);
       return;
     }
@@ -1848,6 +1998,7 @@
       listEl.appendChild(li);
       return;
     }
+    renderEmptyFolders(items.map(item => item.rec));
     const MAX_OCC = 40;
     let lastFolder = null;
     for (const { rec, score, qTokens } of items) {
@@ -1859,7 +2010,7 @@
       if (!q && folder !== lastFolder) {
         const heading = document.createElement("li");
         heading.className = "folder-heading";
-        heading.textContent = folder ? "▾ /" + folder : "▾ / (top level)";
+        heading.textContent = folder ? "▾ /" + folder : "▾ No folder";
         listEl.appendChild(heading);
         lastFolder = folder;
       }
@@ -1872,6 +2023,17 @@
       top.style.display = "flex";
       top.style.alignItems = "center";
       top.style.gap = ".75rem";
+
+      const moveCheck = document.createElement("input");
+      moveCheck.type = "checkbox";
+      moveCheck.checked = active.moveSelected.has(name);
+      moveCheck.setAttribute("aria-label", "Select " + name + " for moving");
+      moveCheck.title = "Select for moving";
+      moveCheck.addEventListener("change", () => {
+        if (moveCheck.checked) active.moveSelected.add(name);
+        else active.moveSelected.delete(name);
+        updateMoveChrome();
+      });
 
       const a = document.createElement("a");
       a.className = "file-link";
@@ -1952,6 +2114,7 @@
       del.addEventListener("click", () => openDeleteDialog(name));
       right.appendChild(del);
 
+      top.appendChild(moveCheck);
       top.appendChild(a);
       top.appendChild(right);
       li.appendChild(top);
@@ -2246,6 +2409,14 @@
   /* ---------- per-tab file filter combo ----------
      Each tab remembers its own selection (collection.selected). While files
      are selected, search runs over those files only. */
+  function updateMoveChrome() {
+    const n = active.moveSelected.size;
+    moveSelectedBtn.disabled = n === 0;
+    moveSelectedBtn.textContent = n
+      ? "Move " + n + " selected here"
+      : "Move selected here";
+  }
+
   function updateFilterChrome() {
     const n = active.selected.size;
     filterInput.placeholder = n
@@ -2261,11 +2432,12 @@
   function renderFilterOptions() {
     filterList.innerHTML = "";
     const q = filterInput.value.trim().toLowerCase();
-    const shown = active.records.filter(r => !q || r.name.toLowerCase().includes(q));
+    const folderRecords = recordsInSelectedFolder();
+    const shown = folderRecords.filter(r => !q || r.name.toLowerCase().includes(q));
     if (!shown.length) {
       const li = document.createElement("li");
       li.className = "filter-empty";
-      li.textContent = active.records.length
+      li.textContent = folderRecords.length
         ? "No file names match “" + filterInput.value.trim() + "”."
         : "No files loaded in this tab yet.";
       filterList.appendChild(li);
@@ -2323,7 +2495,7 @@
 
   filterAll.addEventListener("click", () => {
     const q = filterInput.value.trim().toLowerCase();
-    for (const r of active.records) {
+    for (const r of recordsInSelectedFolder()) {
       if (!q || r.name.toLowerCase().includes(q)) active.selected.add(r.name);
     }
     renderFilterOptions();
@@ -2355,11 +2527,18 @@
 
   pickBtn.addEventListener("click", pickFolder);
   newFolderBtn.addEventListener("click", createFolder);
+  setDefaultFolderBtn.addEventListener("click", setDefaultFolder);
+  moveSelectedBtn.addEventListener("click", moveSelectedFiles);
   folderSelect.addEventListener("change", () => {
-    active.uploadFolder = folderSelect.value;
-    folderInfo.textContent = active.uploadFolder
-      ? "Uploads go to /" + active.uploadFolder
-      : "Uploads go to the top level";
+    active.folderFilter = folderSelect.value;
+    active.uploadFolder = active.folderFilter === "__all__" ? "" : active.folderFilter;
+    active.selected.clear();
+    updateFolderInfo();
+    updateDefaultFolderChrome();
+    updateFilterChrome();
+    updateMoveChrome();
+    if (!filterDrop.hidden) renderFilterOptions();
+    applySearch();
   });
   uploadBtn.addEventListener("click", chooseUploads);
   uploadInput.addEventListener("change", () => {

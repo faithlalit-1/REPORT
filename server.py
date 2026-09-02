@@ -221,6 +221,49 @@ def create_folder(category):
     return jsonify(folder=rel.as_posix()), 201
 
 
+@app.post("/api/move/<category>")
+def move_files(category):
+    config = category_config(category)
+    if not config:
+        return jsonify(error="Unknown category"), 404
+    folder, extensions = config
+    data = request.get_json(silent=True) or {}
+    names = data.get("files")
+    target_rel = safe_relative(data.get("folder", ""), allow_empty=True)
+    target_folder = disk_path(folder, target_rel) if target_rel is not None else None
+    if not isinstance(names, list) or not names:
+        return jsonify(error="Select at least one file"), 400
+    if target_folder is None or not target_folder.is_dir():
+        return jsonify(error="Target folder does not exist"), 400
+
+    moves = []
+    seen = set()
+    destinations = set()
+    for name in names:
+        if not isinstance(name, str) or name in seen:
+            return jsonify(error="Invalid file selection"), 400
+        seen.add(name)
+        rel = safe_relative(name, extensions)
+        source = disk_path(folder, rel) if rel is not None else None
+        if source is None or not source.is_file():
+            return jsonify(error=f"File not found: {name}"), 404
+        destination = target_folder / source.name
+        if source == destination:
+            continue
+        if destination in destinations or destination.exists():
+            relative_destination = destination.relative_to(folder).as_posix()
+            return jsonify(error=f"A file already exists at {relative_destination}"), 409
+        destinations.add(destination)
+        moves.append((source, destination))
+
+    moved = []
+    for source, destination in moves:
+        old_name = source.relative_to(folder).as_posix()
+        source.replace(destination)
+        moved.append({"from": old_name, "to": destination.relative_to(folder).as_posix()})
+    return jsonify(moved=moved)
+
+
 @app.errorhandler(413)
 def too_large(_error):
     return jsonify(error="Upload is larger than 50 MB"), 413

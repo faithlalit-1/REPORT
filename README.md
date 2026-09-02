@@ -16,7 +16,8 @@ The equivalent alias `https://report.shitikanthay.co.in` routes to the same appl
 - Separate HTML, Text, SQL, Word, and Excel tabs
 - Multiple-file uploads with category-specific extension validation
 - Nested folders and subfolders inside every file category
-- Folder-grouped browsing with a selectable upload destination
+- Folder-scoped browsing, filename filtering, and content search
+- Checkbox selection for moving multiple files into another folder
 - Duplicate-file confirmation before replacement
 - File listing, content indexing, relevance search, and per-file filtering
 - In-browser viewing for HTML, text, Word, CSV, and modern Excel files
@@ -40,7 +41,27 @@ Files are stored directly in category directories under the repository:
 
 Uploaded files survive application restarts and Raspberry Pi reboots because they are written to these directories, not held in browser or process memory.
 
-Folders can be nested to any practical depth. Select an existing folder in the **Upload folder** control, use **New folder** to create a child folder, and then upload files into it. Searching continues across every folder in the active file-type tab. Results retain their relative folder path, so files with the same basename can exist in different folders.
+Folders can be nested to any practical depth. Select an existing folder in the **Folder** control, use **New folder** to create a child folder, and then upload files into it. Selecting a folder limits the file filter and content search to that folder and its subfolders; choose **All folders** to search the entire active file-type tab. Results retain their relative folder path, so files with the same basename can exist in different folders.
+
+### Folder selection and search
+
+- **All folders** displays and searches every file in the active file-type tab.
+- **No folder** displays and searches only files stored directly in the category directory, excluding files in folders and subfolders.
+- Selecting a named folder displays and searches files in that folder and its subfolders.
+- The filename-selection filter follows the same folder scope.
+- Changing the selected folder clears the search-filter selection, but preserves files ticked for moving so a destination folder can be chosen after selecting the source files.
+- Click **Set as default** to remember the current folder separately for the active file-type tab. The saved folder opens automatically on future visits in that browser.
+
+The selected named folder or **No folder** is also the destination for uploads and moves. When **All folders** is selected, uploads and moves use **No folder** (the top-level category directory).
+
+### Moving multiple files
+
+1. Open the appropriate file-type tab.
+2. Tick the checkbox beside each file that should be moved.
+3. Choose the destination using the **Folder** selector.
+4. Click **Move N selected here** and confirm the operation.
+
+Moving preserves each filename and does not overwrite existing files. If the destination already contains a file with the same name—or multiple selected files share a name—the move is stopped and the source files remain in place.
 
 ## Local mode
 
@@ -127,8 +148,9 @@ All endpoints require the same HTTP Basic credentials as the web interface.
 | `PUT` | `/api/files/<category>/<name>` | Update an HTML, text, or SQL file |
 | `DELETE` | `/api/files/<category>/<name>` | Delete a file |
 | `POST` | `/api/folders/<category>` | Create a folder or nested folder path |
+| `POST` | `/api/move/<category>` | Move multiple selected files into a folder |
 
-File endpoints accept nested relative paths. The folder endpoint expects JSON such as `{"path":"projects/2026"}`. Upload requests may include a multipart `folder` field selecting the destination. The server independently validates category names, traversal-safe paths, filename safety, and extensions. Client-side `accept` filters are only a convenience and are not trusted for enforcement.
+File endpoints accept nested relative paths. The folder endpoint expects JSON such as `{"path":"projects/2026"}`. The move endpoint accepts `{"files":["one.html","two.html"],"folder":"projects"}`. Upload requests may include a multipart `folder` field selecting the destination. The server independently validates category names, traversal-safe paths, filename safety, and extensions. Client-side `accept` filters are only a convenience and are not trusted for enforcement.
 
 ## Security notes
 
