@@ -8,6 +8,9 @@ ingress:
   - hostname: report.shitikanthay.co.in
     service: http://localhost:8090
 
+  - hostname: record.shitikanthay.co.in
+    service: http://localhost:8090
+
   - hostname: reminder.shitikanthay.co.in
     service: http://localhost:8081
 

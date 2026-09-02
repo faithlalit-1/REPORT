@@ -9,6 +9,8 @@ The deployed instance is available at:
 
 `https://report.shitikanthay.co.in`
 
+The equivalent alias `https://record.shitikanthay.co.in` routes to the same application.
+
 ## Features
 
 - Separate HTML, Text, SQL, Word, and Excel tabs
