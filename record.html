@@ -218,6 +218,27 @@
   }
   .search-info { font-size: .75rem; color: var(--muted); white-space: nowrap; }
 
+  .folder-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .6rem;
+    padding: .7rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .folder-row label { color: var(--muted); font-size: .8rem; font-weight: 600; }
+  .folder-row select { min-width: 220px; max-width: 55%; }
+  .folder-heading {
+    padding: .5rem 1.1rem;
+    background: var(--bg);
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .folder-name { color: var(--muted); font-size: .75rem; margin-top: .12rem; }
+
   /* per-tab file filter (combobox: search only the selected files) */
   .file-filter { position: relative; flex: none; width: 240px; max-width: 45%; }
   .file-filter input[type="text"] {
@@ -558,6 +579,12 @@
         <input id="uploadInput" type="file" multiple hidden />
       </div>
     </div>
+    <div class="folder-row">
+      <label for="folderSelect">Upload folder</label>
+      <select id="folderSelect" aria-label="Choose upload folder"></select>
+      <button id="newFolderBtn" type="button">New folder</button>
+      <span class="search-info" id="folderInfo">Files are grouped by folder</span>
+    </div>
     <div class="search-row">
       <div class="file-filter" id="fileFilter">
         <input id="filterInput" type="text" role="combobox" aria-expanded="false"
@@ -648,6 +675,9 @@
   const uploadBtn = document.getElementById("uploadBtn");
   const uploadInput = document.getElementById("uploadInput");
   const refreshBtn = document.getElementById("refreshBtn");
+  const folderSelect = document.getElementById("folderSelect");
+  const newFolderBtn = document.getElementById("newFolderBtn");
+  const folderInfo = document.getElementById("folderInfo");
   const themeSel = document.getElementById("themeSel");
   const fontUp = document.getElementById("fontUp");
   const fontDown = document.getElementById("fontDown");
@@ -694,7 +724,7 @@
 
   function apiUrl(category, name) {
     let url = "/api/files/" + encodeURIComponent(category);
-    if (name != null) url += "/" + encodeURIComponent(name);
+    if (name != null) url += "/" + name.split("/").map(encodeURIComponent).join("/");
     return url;
   }
 
@@ -717,7 +747,7 @@
       re: /\.html?$/i, accept: ".html,.htm",
       read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
       editable: true,
-      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
       selected: new Set()
     },
     text: {
@@ -726,7 +756,7 @@
       accept: ".txt,.md,.markdown,.log,.csv,.json,.text,.sql,.xml,.yml,.yaml",
       read: async (f) => plainText(await f.text()), handleKey: "textDir",
       editable: true,
-      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
       selected: new Set()
     },
     sql: {
@@ -734,7 +764,7 @@
       re: /\.sql$/i, accept: ".sql",
       read: async (f) => plainText(await f.text()), handleKey: "sqlDir",
       editable: true,
-      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
       selected: new Set()
     },
     docx: {
@@ -742,7 +772,7 @@
       re: /\.docx$/i, accept: ".docx",
       read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "wordDir",
       editable: false,
-      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
       selected: new Set()
     },
     excel: {
@@ -757,7 +787,7 @@
         return xlsxToText(await f.arrayBuffer());
       },
       handleKey: "excelDir", editable: false,
-      handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
+      handle: null, loaded: false, records: [], folders: [], uploadFolder: "", docFreq: new Map(), query: "",
       selected: new Set()
     }
   };
@@ -871,6 +901,88 @@
     } catch (_) { showToast("Could not reconnect — use Open folder."); }
   }
 
+  function pathParts(path) {
+    return (path || "").split("/").filter(Boolean);
+  }
+
+  function pathDir(path) {
+    const parts = pathParts(path);
+    parts.pop();
+    return parts.join("/");
+  }
+
+  function pathBase(path) {
+    const parts = pathParts(path);
+    return parts[parts.length - 1] || path;
+  }
+
+  async function directoryAt(rootHandle, path, create) {
+    let handle = rootHandle;
+    for (const part of pathParts(path)) {
+      handle = await handle.getDirectoryHandle(part, { create: !!create });
+    }
+    return handle;
+  }
+
+  function updateFolderOptions() {
+    const current = active.uploadFolder;
+    folderSelect.innerHTML = "";
+    const rootOption = document.createElement("option");
+    rootOption.value = "";
+    rootOption.textContent = "/ (top level)";
+    folderSelect.appendChild(rootOption);
+    for (const folder of active.folders) {
+      const option = document.createElement("option");
+      option.value = folder;
+      option.textContent = "  ".repeat(Math.max(0, pathParts(folder).length - 1)) + "↳ " + pathBase(folder);
+      folderSelect.appendChild(option);
+    }
+    active.uploadFolder = active.folders.includes(current) ? current : "";
+    folderSelect.value = active.uploadFolder;
+    folderInfo.textContent = active.uploadFolder
+      ? "Uploads go to /" + active.uploadFolder
+      : "Uploads go to the top level";
+  }
+
+  async function createFolder() {
+    if (!active.handle) {
+      showToast("Open the " + active.dir + " folder first.");
+      await pickFolder();
+      if (!active.handle) return;
+    }
+    const parent = active.uploadFolder;
+    const entered = window.prompt(
+      "New folder name" + (parent ? " inside /" + parent : "") + ":"
+    );
+    if (entered == null) return;
+    const name = entered.trim();
+    if (!name || name === "." || name === ".." || /[\\/]/.test(name)) {
+      showToast("Use a single folder name without / or \\.");
+      return;
+    }
+    const path = parent ? parent + "/" + name : name;
+    try {
+      if (remoteMode) {
+        const response = await fetch("/api/folders/" + encodeURIComponent(active.key), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Could not create folder");
+      } else {
+        if (!(await ensurePermission(active.handle, true))) throw new Error("Write permission denied");
+        await directoryAt(active.handle, path, true);
+      }
+      active.uploadFolder = path;
+      active.loaded = false;
+      await listFiles();
+      showToast("Created folder: /" + path);
+    } catch (err) {
+      showToast(err.message || "Could not create folder.");
+    }
+  }
+
   /* ---------- upload multiple files into the active collection ---------- */
   async function chooseUploads() {
     if (!supportsFS) { renderUnsupported(); return; }
@@ -899,9 +1011,10 @@
     const valid = files.filter(file => col.re.test(file.name));
     const rejected = files.length - valid.length;
     if (remoteMode) {
+      const prefix = col.uploadFolder ? col.uploadFolder + "/" : "";
       const existing = new Set(col.records.map(record => record.name));
       const selected = valid.filter(file =>
-        !existing.has(file.name) || window.confirm(file.name + " already exists. Replace it?")
+        !existing.has(prefix + file.name) || window.confirm(prefix + file.name + " already exists. Replace it?")
       );
       const skipped = valid.length - selected.length;
       if (!selected.length) {
@@ -914,6 +1027,7 @@
       try {
         const body = new FormData();
         body.append("replace", "true");
+        body.append("folder", col.uploadFolder);
         for (const file of selected) body.append("files", file, file.name);
         const response = await fetch(apiUrl(col.key), { method: "POST", body });
         const result = await response.json().catch(() => ({}));
@@ -941,10 +1055,11 @@
     uploadBtn.textContent = "Uploading…";
 
     try {
+      const uploadDir = await directoryAt(col.handle, col.uploadFolder, false);
       for (const file of valid) {
         let exists = false;
         try {
-          await col.handle.getFileHandle(file.name);
+          await uploadDir.getFileHandle(file.name);
           exists = true;
         } catch (err) {
           if (!err || err.name !== "NotFoundError") throw err;
@@ -954,7 +1069,7 @@
           continue;
         }
 
-        const target = await col.handle.getFileHandle(file.name, { create: true });
+        const target = await uploadDir.getFileHandle(file.name, { create: true });
         const writable = await target.createWritable();
         try {
           await writable.write(file);
@@ -995,6 +1110,7 @@
     listEl.setAttribute("aria-label", active.label + " records");
     closeFilterDrop();
     updateFilterChrome();
+    updateFolderOptions();
   }
 
   async function switchTab(key) {
@@ -1404,16 +1520,27 @@
     if (!(await ensurePermission(col.handle, false))) { renderHint(true); return; }
 
     const handles = [];
+    const folders = [];
     try {
       if (remoteMode) {
         const response = await fetch(apiUrl(col.key));
         if (!response.ok) throw new Error("Could not list files");
         const data = await response.json();
         for (const name of data.files || []) handles.push([name, remoteFileHandle(col.key, name)]);
+        folders.push(...(data.folders || []));
       } else {
-        for await (const [name, entry] of col.handle.entries()) {
-          if (entry.kind === "file" && col.re.test(name)) handles.push([name, entry]);
+        async function walk(dirHandle, prefix) {
+          for await (const [name, entry] of dirHandle.entries()) {
+            const relative = prefix ? prefix + "/" + name : name;
+            if (entry.kind === "directory") {
+              folders.push(relative);
+              await walk(entry, relative);
+            } else if (entry.kind === "file" && col.re.test(name)) {
+              handles.push([relative, entry]);
+            }
+          }
         }
+        await walk(col.handle, "");
       }
     } catch (_) {
       showToast("Could not read the folder.");
@@ -1438,6 +1565,7 @@
       records.push({ name, text, tf, len: tokens.length, handle: entry });
     }
     col.records = records;
+    col.folders = folders.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     col.docFreq = docFreq;
     col.loaded = true;
     // drop selected files that no longer exist on disk
@@ -1445,6 +1573,7 @@
       if (!records.some(r => r.name === n)) col.selected.delete(n);
     }
     if (active === col) {
+      updateFolderOptions();
       updateFilterChrome();
       if (!filterDrop.hidden) renderFilterOptions();
       applySearch();
@@ -1615,8 +1744,12 @@
 
   // For HTML records we keep the original document, but inject a <base> so its
   // relative assets resolve, plus the jump-to-match highlighter.
-  function injectIntoHtml(src, query, startIndex) {
-    const base = '<base href="' + new URL(active.dir + "/", location.href).href + '">';
+  function injectIntoHtml(src, query, startIndex, recordName) {
+    const folder = pathDir(recordName || "");
+    const basePath = remoteMode
+      ? apiUrl(active.key) + "/" + (folder ? folder.split("/").map(encodeURIComponent).join("/") + "/" : "")
+      : active.dir + "/" + (folder ? folder.split("/").map(encodeURIComponent).join("/") + "/" : "");
+    const base = '<base href="' + new URL(basePath, location.href).href + '">';
     const script = highlightScript(query, startIndex);
     if (/<head[^>]*>/i.test(src)) src = src.replace(/<head[^>]*>/i, (m) => m + base);
     else if (/<html[^>]*>/i.test(src)) src = src.replace(/<html[^>]*>/i, (m) => m + "<head>" + base + "</head>");
@@ -1652,7 +1785,7 @@
             html = docViewerPage(rec.name, sheetsToHtml(sheets), query, false, occ);
           }
         } else if (active.key === "html") {
-          html = injectIntoHtml(await file.text(), query, occ);
+          html = injectIntoHtml(await file.text(), query, occ, rec.name);
         } else {
           html = docViewerPage(rec.name, "<pre>" + escapeHtml(await file.text()) + "</pre>", query, true, occ);
         }
@@ -1716,10 +1849,20 @@
       return;
     }
     const MAX_OCC = 40;
+    let lastFolder = null;
     for (const { rec, score, qTokens } of items) {
       const name = rec.name;
       const q = (qTokens && qTokens.length) ? searchInput.value.trim() : "";
       const matches = q ? findMatches(rec.text, qTokens) : [];
+
+      const folder = pathDir(name);
+      if (!q && folder !== lastFolder) {
+        const heading = document.createElement("li");
+        heading.className = "folder-heading";
+        heading.textContent = folder ? "▾ /" + folder : "▾ / (top level)";
+        listEl.appendChild(heading);
+        lastFolder = folder;
+      }
 
       const li = document.createElement("li");
       li.style.flexDirection = "column";
@@ -1732,7 +1875,9 @@
 
       const a = document.createElement("a");
       a.className = "file-link";
-      a.href = remoteMode ? apiUrl(active.key, name) : active.dir + "/" + encodeURIComponent(name);
+      a.href = remoteMode
+        ? apiUrl(active.key, name)
+        : active.dir + "/" + name.split("/").map(encodeURIComponent).join("/");
       a.target = "_blank";
       a.rel = "noopener";
       a.innerHTML = '<span class="doc-ico" aria-hidden="true">▤</span>';
@@ -1746,8 +1891,14 @@
       meta.className = "file-meta";
       const nameEl = document.createElement("span");
       nameEl.className = "name";
-      nameEl.innerHTML = q ? highlight(name, qTokens) : escapeHtml(name);
+      nameEl.innerHTML = q ? highlight(pathBase(name), qTokens) : escapeHtml(pathBase(name));
       meta.appendChild(nameEl);
+      if (folder) {
+        const folderEl = document.createElement("span");
+        folderEl.className = "folder-name";
+        folderEl.textContent = "/" + folder;
+        meta.appendChild(folderEl);
+      }
       if (q && !matches.length) {
         const snip = document.createElement("span");
         snip.className = "snippet";
@@ -1869,6 +2020,8 @@
     listEl.appendChild(li);
     pickBtn.disabled = true;
     uploadBtn.disabled = true;
+    newFolderBtn.disabled = true;
+    folderSelect.disabled = true;
   }
 
   /* ---------- delete flow (double-check) ---------- */
@@ -1904,7 +2057,8 @@
         const response = await fetch(apiUrl(active.key, name), { method: "DELETE" });
         if (!response.ok) throw new Error("Delete failed");
       } else {
-        await active.handle.removeEntry(name);
+        const parent = await directoryAt(active.handle, pathDir(name), false);
+        await parent.removeEntry(pathBase(name));
       }
       showToast("Deleted: " + name);
       active.loaded = false;
@@ -1961,7 +2115,8 @@
     const folderName = (active.handle && active.handle.name) || active.dir;
     const dirUrl = location.href.replace(/[^/]*$/, "") + encodeURIComponent(folderName) + "/";
     const { isWin, isMac } = osInfo();
-    const filePath = fileUrlToOsPath(dirUrl + encodeURIComponent(name), isWin);
+    const encodedName = name.split("/").map(encodeURIComponent).join("/");
+    const filePath = fileUrlToOsPath(dirUrl + encodedName, isWin);
 
     // 1) Preferred: let the local helper reveal it in Finder / Explorer.
     try {
@@ -2199,6 +2354,13 @@
   });
 
   pickBtn.addEventListener("click", pickFolder);
+  newFolderBtn.addEventListener("click", createFolder);
+  folderSelect.addEventListener("change", () => {
+    active.uploadFolder = folderSelect.value;
+    folderInfo.textContent = active.uploadFolder
+      ? "Uploads go to /" + active.uploadFolder
+      : "Uploads go to the top level";
+  });
   uploadBtn.addEventListener("click", chooseUploads);
   uploadInput.addEventListener("change", () => {
     uploadFiles(Array.from(uploadInput.files || []));

@@ -3,10 +3,9 @@
 
 import hmac
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from flask import Flask, Response, jsonify, redirect, request, send_file
-from werkzeug.utils import secure_filename
 
 
 ROOT = Path(__file__).resolve().parent
@@ -63,11 +62,36 @@ def category_config(key):
     return folder, extensions
 
 
-def valid_name(name, extensions):
+def safe_relative(raw, extensions=None, allow_empty=False):
+    """Return a safe POSIX relative path, or None for traversal/invalid input."""
+    value = (raw or "").strip().replace("\\", "/").strip("/")
+    if not value:
+        return PurePosixPath(".") if allow_empty else None
+    rel = PurePosixPath(value)
+    if rel.is_absolute() or any(part in {"", ".", ".."} for part in rel.parts):
+        return None
+    if extensions is not None and rel.suffix.lower() not in extensions:
+        return None
+    return rel
+
+
+def disk_path(folder, rel):
+    path = (folder / Path(*rel.parts)).resolve()
+    try:
+        path.relative_to(folder.resolve())
+    except ValueError:
+        return None
+    return path
+
+
+def valid_upload_name(name, extensions):
     return (
         bool(name)
         and name == Path(name).name
-        and name not in {".", ".."}
+        and "/" not in name
+        and "\\" not in name
+        and "\x00" not in name
+        and not any(ord(char) < 32 for char in name)
         and Path(name).suffix.lower() in extensions
     )
 
@@ -89,10 +113,14 @@ def list_files(category):
         return jsonify(error="Unknown category"), 404
     folder, extensions = config
     names = sorted(
-        (path.name for path in folder.iterdir() if path.is_file() and path.suffix.lower() in extensions),
+        (path.relative_to(folder).as_posix() for path in folder.rglob("*") if path.is_file() and path.suffix.lower() in extensions),
         key=str.casefold,
     )
-    return jsonify(files=names)
+    folders = sorted(
+        (path.relative_to(folder).as_posix() for path in folder.rglob("*") if path.is_dir()),
+        key=str.casefold,
+    )
+    return jsonify(files=names, folders=folders)
 
 
 @app.get("/api/files/<category>/<path:name>")
@@ -101,9 +129,10 @@ def download_file(category, name):
     if not config:
         return jsonify(error="Unknown category"), 404
     folder, extensions = config
-    if not valid_name(name, extensions):
+    rel = safe_relative(name, extensions)
+    if rel is None:
         return jsonify(error="Invalid filename or file type"), 400
-    path = folder / name
+    path = disk_path(folder, rel)
     if not path.is_file():
         return jsonify(error="File not found"), 404
     return send_file(path, as_attachment=False, download_name=name)
@@ -116,19 +145,26 @@ def upload_files(category):
         return jsonify(error="Unknown category"), 404
     folder, extensions = config
     replace = request.form.get("replace") == "true"
+    target_rel = safe_relative(request.form.get("folder", ""), allow_empty=True)
+    if target_rel is None:
+        return jsonify(error="Invalid target folder"), 400
+    target_folder = disk_path(folder, target_rel)
+    if target_folder is None or not target_folder.is_dir():
+        return jsonify(error="Target folder does not exist"), 400
     uploaded, skipped, rejected = [], [], []
     for incoming in request.files.getlist("files"):
         original = incoming.filename or ""
-        name = secure_filename(original)
-        if name != original or not valid_name(name, extensions):
+        name = original
+        if not valid_upload_name(name, extensions):
             rejected.append(original)
             continue
-        destination = folder / name
+        destination = target_folder / name
+        relative_name = destination.relative_to(folder).as_posix()
         if destination.exists() and not replace:
-            skipped.append(name)
+            skipped.append(relative_name)
             continue
         incoming.save(destination)
-        uploaded.append(name)
+        uploaded.append(relative_name)
     return jsonify(uploaded=uploaded, skipped=skipped, rejected=rejected)
 
 
@@ -138,11 +174,12 @@ def update_file(category, name):
     if not config:
         return jsonify(error="Unknown category"), 404
     folder, extensions = config
-    if not valid_name(name, extensions):
+    rel = safe_relative(name, extensions)
+    if rel is None:
         return jsonify(error="Invalid filename or file type"), 400
     if category not in {"html", "text", "sql"}:
         return jsonify(error="This file type cannot be edited in the browser"), 405
-    path = folder / name
+    path = disk_path(folder, rel)
     if not path.is_file():
         return jsonify(error="File not found"), 404
     path.write_bytes(request.get_data(cache=False))
@@ -155,13 +192,33 @@ def delete_file(category, name):
     if not config:
         return jsonify(error="Unknown category"), 404
     folder, extensions = config
-    if not valid_name(name, extensions):
+    rel = safe_relative(name, extensions)
+    if rel is None:
         return jsonify(error="Invalid filename or file type"), 400
-    path = folder / name
+    path = disk_path(folder, rel)
     if not path.is_file():
         return jsonify(error="File not found"), 404
     path.unlink()
     return jsonify(deleted=name)
+
+
+@app.post("/api/folders/<category>")
+def create_folder(category):
+    config = category_config(category)
+    if not config:
+        return jsonify(error="Unknown category"), 404
+    folder, _extensions = config
+    data = request.get_json(silent=True) or {}
+    rel = safe_relative(data.get("path"))
+    if rel is None:
+        return jsonify(error="Invalid folder path"), 400
+    path = disk_path(folder, rel)
+    if path is None:
+        return jsonify(error="Invalid folder path"), 400
+    if path.exists() and not path.is_dir():
+        return jsonify(error="A file already uses that name"), 409
+    path.mkdir(parents=True, exist_ok=True)
+    return jsonify(folder=rel.as_posix()), 201
 
 
 @app.errorhandler(413)

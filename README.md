@@ -13,6 +13,8 @@ The deployed instance is available at:
 
 - Separate HTML, Text, SQL, Word, and Excel tabs
 - Multiple-file uploads with category-specific extension validation
+- Nested folders and subfolders inside every file category
+- Folder-grouped browsing with a selectable upload destination
 - Duplicate-file confirmation before replacement
 - File listing, content indexing, relevance search, and per-file filtering
 - In-browser viewing for HTML, text, Word, CSV, and modern Excel files
@@ -35,6 +37,8 @@ Files are stored directly in category directories under the repository:
 | Excel | `excel/` | `.xlsx`, `.xlsm`, `.csv` |
 
 Uploaded files survive application restarts and Raspberry Pi reboots because they are written to these directories, not held in browser or process memory.
+
+Folders can be nested to any practical depth. Select an existing folder in the **Upload folder** control, use **New folder** to create a child folder, and then upload files into it. Searching continues across every folder in the active file-type tab. Results retain their relative folder path, so files with the same basename can exist in different folders.
 
 ## Local mode
 
@@ -118,8 +122,9 @@ All endpoints require the same HTTP Basic credentials as the web interface.
 | `POST` | `/api/files/<category>` | Upload one or more multipart `files` |
 | `PUT` | `/api/files/<category>/<name>` | Update an HTML, text, or SQL file |
 | `DELETE` | `/api/files/<category>/<name>` | Delete a file |
+| `POST` | `/api/folders/<category>` | Create a folder or nested folder path |
 
-The server independently validates category names, filename safety, and extensions. Client-side `accept` filters are only a convenience and are not trusted for enforcement.
+File endpoints accept nested relative paths. The folder endpoint expects JSON such as `{"path":"projects/2026"}`. Upload requests may include a multipart `folder` field selecting the destination. The server independently validates category names, traversal-safe paths, filename safety, and extensions. Client-side `accept` filters are only a convenience and are not trusted for enforcement.
 
 ## Security notes
 
