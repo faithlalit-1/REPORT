@@ -1,0 +1,26 @@
+tunnel: rpi-tunnel
+credentials-file: /home/pi/.cloudflared/d2ff76fe-fad2-4989-bafc-45796e0cf075.json
+
+ingress:
+  - hostname: rpi.shitikanthay.co.in
+    service: http://localhost:8080
+
+  - hostname: report.shitikanthay.co.in
+    service: http://localhost:8090
+
+  - hostname: reminder.shitikanthay.co.in
+    service: http://localhost:8081
+
+  - hostname: u.shitikanthay.co.in
+    service: http://localhost:3000
+
+  - hostname: rpimysql.shitikanthay.co.in
+    service: tcp://localhost:3307
+
+  - hostname: credmysql.shitikanthay.co.in
+    service: tcp://localhost:3308
+
+  - hostname: umysql.shitikanthay.co.in
+    service: tcp://localhost:3040
+
+  - service: http_status:404

@@ -553,7 +553,9 @@
       <div style="display:flex;align-items:center;gap:.6rem">
         <span class="count-pill" id="countPill" aria-live="polite">—</span>
         <button id="refreshBtn" aria-label="Refresh list" title="Refresh">↻</button>
+        <button class="btn-accent" id="uploadBtn">Upload files</button>
         <button class="btn-accent" id="pickBtn">Open html folder</button>
+        <input id="uploadInput" type="file" multiple hidden />
       </div>
     </div>
     <div class="search-row">
@@ -643,6 +645,8 @@
   const listEl = document.getElementById("indexList");
   const countPill = document.getElementById("countPill");
   const pickBtn = document.getElementById("pickBtn");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const uploadInput = document.getElementById("uploadInput");
   const refreshBtn = document.getElementById("refreshBtn");
   const themeSel = document.getElementById("themeSel");
   const fontUp = document.getElementById("fontUp");
@@ -663,6 +667,7 @@
   const editCancel = document.getElementById("editCancel");
 
   const helperDot = document.getElementById("helperDot");
+  const helperBar = document.getElementById("helperBar");
   const helperStateText = document.getElementById("helperStateText");
   const helperBtn = document.getElementById("helperBtn");
   const helperDialog = document.getElementById("helperDialog");
@@ -684,13 +689,33 @@
   const idxHead = document.getElementById("idxHead");
   const tabEls = Array.from(document.querySelectorAll(".tab"));
 
-  const supportsFS = "showDirectoryPicker" in window;
+  const remoteMode = location.protocol === "http:" || location.protocol === "https:";
+  const supportsFS = remoteMode || "showDirectoryPicker" in window;
+
+  function apiUrl(category, name) {
+    let url = "/api/files/" + encodeURIComponent(category);
+    if (name != null) url += "/" + encodeURIComponent(name);
+    return url;
+  }
+
+  function remoteFileHandle(category, name) {
+    return {
+      name,
+      async getFile() {
+        const response = await fetch(apiUrl(category, name));
+        if (!response.ok) throw new Error("Could not load file");
+        const blob = await response.blob();
+        return new File([blob], name, { type: blob.type, lastModified: Date.now() });
+      }
+    };
+  }
 
   /* ---------- collections (tabs) ---------- */
   const collections = {
     html: {
       key: "html", label: "HTML", dir: "html",
-      re: /\.html?$/i, read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
+      re: /\.html?$/i, accept: ".html,.htm",
+      read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
       editable: true,
       handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
       selected: new Set()
@@ -698,6 +723,7 @@
     text: {
       key: "text", label: "Text", dir: "text",
       re: /\.(txt|md|markdown|log|csv|json|text|sql|xml|yml|yaml)$/i,
+      accept: ".txt,.md,.markdown,.log,.csv,.json,.text,.sql,.xml,.yml,.yaml",
       read: async (f) => plainText(await f.text()), handleKey: "textDir",
       editable: true,
       handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
@@ -705,22 +731,23 @@
     },
     sql: {
       key: "sql", label: "SQL", dir: "sql",
-      re: /\.sql$/i,
+      re: /\.sql$/i, accept: ".sql",
       read: async (f) => plainText(await f.text()), handleKey: "sqlDir",
       editable: true,
       handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
       selected: new Set()
     },
     docx: {
-      key: "docx", label: "Word", dir: "docx",
-      re: /\.docx$/i, read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "docxDir",
+      key: "docx", label: "Word", dir: "word",
+      re: /\.docx$/i, accept: ".docx",
+      read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "wordDir",
       editable: false,
       handle: null, loaded: false, records: [], docFreq: new Map(), query: "",
       selected: new Set()
     },
     excel: {
       key: "excel", label: "Excel", dir: "excel",
-      re: /\.(xlsx|xlsm|csv)$/i,
+      re: /\.(xlsx|xlsm|csv)$/i, accept: ".xlsx,.xlsm,.csv",
       read: async (f) => {
         if (/\.csv$/i.test(f.name)) {
           const raw = await f.text();
@@ -789,6 +816,7 @@
   const loadHandle = (key) => idb("readonly", (s) => s.get(key));
 
   async function ensurePermission(handle, write) {
+    if (remoteMode) return true;
     const opts = { mode: write ? "readwrite" : "read" };
     if ((await handle.queryPermission(opts)) === "granted") return true;
     return (await handle.requestPermission(opts)) === "granted";
@@ -797,6 +825,12 @@
   /* ---------- pick / restore folder ---------- */
   async function pickFolder() {
     if (!supportsFS) { renderUnsupported(); return; }
+    if (remoteMode) {
+      active.handle = { name: active.dir };
+      active.loaded = false;
+      await listFiles();
+      return;
+    }
     try {
       const handle = await window.showDirectoryPicker({ id: active.key, mode: "readwrite" });
       active.handle = handle;
@@ -810,6 +844,11 @@
 
   async function tryRestore() {
     if (!supportsFS) { renderUnsupported(); return; }
+    if (remoteMode) {
+      for (const c of Object.values(collections)) c.handle = { name: c.dir };
+      await listFiles();
+      return;
+    }
     // restore stored handles for every collection (without prompting)
     for (const c of Object.values(collections)) {
       try { c.handle = await loadHandle(c.handleKey); } catch (_) { c.handle = null; }
@@ -832,12 +871,125 @@
     } catch (_) { showToast("Could not reconnect — use Open folder."); }
   }
 
+  /* ---------- upload multiple files into the active collection ---------- */
+  async function chooseUploads() {
+    if (!supportsFS) { renderUnsupported(); return; }
+    if (!active.handle) {
+      showToast("Open the " + active.dir + " folder before uploading.");
+      await pickFolder();
+      if (!active.handle) return;
+    }
+    if (!(await ensurePermission(active.handle, true))) {
+      showToast("Write permission denied.");
+      return;
+    }
+    uploadInput.value = "";
+    uploadInput.accept = active.accept;
+    uploadInput.click();
+  }
+
+  async function uploadFiles(files) {
+    const col = active;
+    if (!files.length || !col.handle) return;
+    if (!(await ensurePermission(col.handle, true))) {
+      showToast("Write permission denied.");
+      return;
+    }
+
+    const valid = files.filter(file => col.re.test(file.name));
+    const rejected = files.length - valid.length;
+    if (remoteMode) {
+      const existing = new Set(col.records.map(record => record.name));
+      const selected = valid.filter(file =>
+        !existing.has(file.name) || window.confirm(file.name + " already exists. Replace it?")
+      );
+      const skipped = valid.length - selected.length;
+      if (!selected.length) {
+        showToast(skipped + " skipped" + (rejected ? ", " + rejected + " invalid type" : "") + ".");
+        uploadInput.value = "";
+        return;
+      }
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = "Uploading…";
+      try {
+        const body = new FormData();
+        body.append("replace", "true");
+        for (const file of selected) body.append("files", file, file.name);
+        const response = await fetch(apiUrl(col.key), { method: "POST", body });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Upload failed");
+        col.loaded = false;
+        await listFiles();
+        let message = result.uploaded.length + " file" + (result.uploaded.length === 1 ? "" : "s") + " uploaded";
+        const totalSkipped = skipped + result.skipped.length;
+        const totalRejected = rejected + result.rejected.length;
+        if (totalSkipped) message += ", " + totalSkipped + " skipped";
+        if (totalRejected) message += ", " + totalRejected + " invalid type" + (totalRejected === 1 ? "" : "s");
+        showToast(message + ".");
+      } catch (err) {
+        showToast(err.message || "Upload failed.");
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = "Upload " + col.label + " files";
+        uploadInput.value = "";
+      }
+      return;
+    }
+    let uploaded = 0;
+    let skipped = 0;
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Uploading…";
+
+    try {
+      for (const file of valid) {
+        let exists = false;
+        try {
+          await col.handle.getFileHandle(file.name);
+          exists = true;
+        } catch (err) {
+          if (!err || err.name !== "NotFoundError") throw err;
+        }
+        if (exists && !window.confirm(file.name + " already exists. Replace it?")) {
+          skipped++;
+          continue;
+        }
+
+        const target = await col.handle.getFileHandle(file.name, { create: true });
+        const writable = await target.createWritable();
+        try {
+          await writable.write(file);
+          await writable.close();
+          uploaded++;
+        } catch (err) {
+          try { await writable.abort(); } catch (_) {}
+          throw err;
+        }
+      }
+      col.loaded = false;
+      if (active === col) await listFiles();
+      let message = uploaded + " file" + (uploaded === 1 ? "" : "s") + " uploaded";
+      if (skipped) message += ", " + skipped + " skipped";
+      if (rejected) message += ", " + rejected + " invalid type" + (rejected === 1 ? "" : "s");
+      showToast(message + ".");
+    } catch (_) {
+      showToast("Upload stopped because a file could not be written.");
+      col.loaded = false;
+      if (active === col) await listFiles();
+    } finally {
+      uploadBtn.disabled = false;
+      if (active === col) uploadBtn.textContent = "Upload " + col.label + " files";
+      uploadInput.value = "";
+    }
+  }
+
   /* ---------- tab switching ---------- */
   function updateChrome() {
     tabEls.forEach(t => t.setAttribute("aria-selected", String(t.dataset.key === active.key)));
     idxHead.textContent = active.label + " records";
     subText.innerHTML = "Index of files in the <code>" + active.dir + "</code> folder";
     pickBtn.textContent = "Open " + active.dir + " folder";
+    uploadBtn.textContent = "Upload " + active.label + " files";
+    uploadInput.accept = active.accept;
     searchInput.placeholder = "Search " + active.label.toLowerCase() +
       " records by name or content…";
     listEl.setAttribute("aria-label", active.label + " records");
@@ -1253,8 +1405,15 @@
 
     const handles = [];
     try {
-      for await (const [name, entry] of col.handle.entries()) {
-        if (entry.kind === "file" && col.re.test(name)) handles.push([name, entry]);
+      if (remoteMode) {
+        const response = await fetch(apiUrl(col.key));
+        if (!response.ok) throw new Error("Could not list files");
+        const data = await response.json();
+        for (const name of data.files || []) handles.push([name, remoteFileHandle(col.key, name)]);
+      } else {
+        for await (const [name, entry] of col.handle.entries()) {
+          if (entry.kind === "file" && col.re.test(name)) handles.push([name, entry]);
+        }
       }
     } catch (_) {
       showToast("Could not read the folder.");
@@ -1573,7 +1732,7 @@
 
       const a = document.createElement("a");
       a.className = "file-link";
-      a.href = active.dir + "/" + encodeURIComponent(name);
+      a.href = remoteMode ? apiUrl(active.key, name) : active.dir + "/" + encodeURIComponent(name);
       a.target = "_blank";
       a.rel = "noopener";
       a.innerHTML = '<span class="doc-ico" aria-hidden="true">▤</span>';
@@ -1709,6 +1868,7 @@
                    '<strong>Chrome</strong> or <strong>Edge</strong> for full functionality.';
     listEl.appendChild(li);
     pickBtn.disabled = true;
+    uploadBtn.disabled = true;
   }
 
   /* ---------- delete flow (double-check) ---------- */
@@ -1740,7 +1900,12 @@
         showToast("Write permission denied.");
         return;
       }
-      await active.handle.removeEntry(name);
+      if (remoteMode) {
+        const response = await fetch(apiUrl(active.key, name), { method: "DELETE" });
+        if (!response.ok) throw new Error("Delete failed");
+      } else {
+        await active.handle.removeEntry(name);
+      }
       showToast("Deleted: " + name);
       active.loaded = false;
       await listFiles();
@@ -1901,9 +2066,18 @@
         showToast("Write permission denied.");
         return;
       }
-      const writable = await rec.handle.createWritable();
-      await writable.write(editArea.value);
-      await writable.close();
+      if (remoteMode) {
+        const response = await fetch(apiUrl(active.key, rec.name), {
+          method: "PUT",
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+          body: editArea.value
+        });
+        if (!response.ok) throw new Error("Save failed");
+      } else {
+        const writable = await rec.handle.createWritable();
+        await writable.write(editArea.value);
+        await writable.close();
+      }
       showToast("Saved: " + rec.name);
       editDialog.close();
       editRec = null;
@@ -2025,6 +2199,10 @@
   });
 
   pickBtn.addEventListener("click", pickFolder);
+  uploadBtn.addEventListener("click", chooseUploads);
+  uploadInput.addEventListener("change", () => {
+    uploadFiles(Array.from(uploadInput.files || []));
+  });
   refreshBtn.addEventListener("click", () => {
     if (active.handle) { active.loaded = false; listFiles(); } else pickFolder();
   });
@@ -2044,7 +2222,8 @@
 
   updateChrome();
   tryRestore();
-  refreshHelper(false);
+  if (remoteMode) helperBar.hidden = true;
+  else refreshHelper(false);
 })();
 </script>
 </body>
