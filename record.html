@@ -401,6 +401,13 @@
     margin-top: 1rem;
   }
   .target-name { font-weight: 700; word-break: break-all; }
+  .dlg-body h3.plain-title { color: var(--text); }
+  .dlg-body code {
+    background: var(--row-hover);
+    padding: .1rem .35rem;
+    border-radius: 5px;
+  }
+  .dlg-error { color: var(--danger); font-size: .8rem; font-weight: 600; }
 
   /* reveal-helper status bar */
   .helper-bar {
@@ -583,6 +590,7 @@
       <label for="folderSelect">Folder</label>
       <select id="folderSelect" aria-label="Choose upload folder"></select>
       <button id="newFolderBtn" type="button">New folder</button>
+      <button id="newFileBtn" type="button">New file</button>
       <button id="setDefaultFolderBtn" type="button">Set as default</button>
       <button id="moveSelectedBtn" type="button" disabled>Move selected here</button>
       <span class="search-info" id="folderInfo">Files are grouped by folder</span>
@@ -644,6 +652,21 @@
   </form>
 </dialog>
 
+<dialog id="newFileDialog" aria-labelledby="newFileTitle">
+  <form method="dialog" class="dlg-body" id="newFileForm">
+    <h3 id="newFileTitle" class="plain-title">New file</h3>
+    <p id="newFileWhere"></p>
+    <input id="newFileInput" type="text" autocomplete="off" spellcheck="false"
+           placeholder="File name" aria-label="File name" aria-describedby="newFileHint" />
+    <p class="edit-hint" id="newFileHint"></p>
+    <p class="dlg-error" id="newFileError" role="alert" hidden></p>
+    <div class="dlg-actions">
+      <button type="button" id="newFileCancel">Cancel</button>
+      <button type="submit" class="btn-accent" id="newFileCreate" disabled>Create</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="helperDialog" aria-labelledby="helperTitle">
   <div class="dlg-body">
     <h3 id="helperTitle" class="helper-title">Start the reveal helper</h3>
@@ -700,6 +723,17 @@
   const editArea = document.getElementById("editArea");
   const editCancel = document.getElementById("editCancel");
 
+  const newFileBtn = document.getElementById("newFileBtn");
+  const newFileDialog = document.getElementById("newFileDialog");
+  const newFileForm = document.getElementById("newFileForm");
+  const newFileTitle = document.getElementById("newFileTitle");
+  const newFileWhere = document.getElementById("newFileWhere");
+  const newFileInput = document.getElementById("newFileInput");
+  const newFileHint = document.getElementById("newFileHint");
+  const newFileError = document.getElementById("newFileError");
+  const newFileCancel = document.getElementById("newFileCancel");
+  const newFileCreate = document.getElementById("newFileCreate");
+
   const helperDot = document.getElementById("helperDot");
   const helperBar = document.getElementById("helperBar");
   const helperStateText = document.getElementById("helperStateText");
@@ -748,7 +782,7 @@
   const collections = {
     html: {
       key: "html", label: "HTML", dir: "html",
-      re: /\.html?$/i, accept: ".html,.htm",
+      re: /\.html?$/i, accept: ".html,.htm", defaultExt: ".html",
       read: async (f) => htmlToText(await f.text()), handleKey: "htmlDir",
       editable: true,
       handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
@@ -757,7 +791,7 @@
     text: {
       key: "text", label: "Text", dir: "text",
       re: /\.(txt|md|markdown|log|csv|json|text|sql|xml|yml|yaml)$/i,
-      accept: ".txt,.md,.markdown,.log,.csv,.json,.text,.sql,.xml,.yml,.yaml",
+      accept: ".txt,.md,.markdown,.log,.csv,.json,.text,.sql,.xml,.yml,.yaml", defaultExt: ".txt",
       read: async (f) => plainText(await f.text()), handleKey: "textDir",
       editable: true,
       handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
@@ -765,7 +799,7 @@
     },
     sql: {
       key: "sql", label: "SQL", dir: "sql",
-      re: /\.sql$/i, accept: ".sql",
+      re: /\.sql$/i, accept: ".sql", defaultExt: ".sql",
       read: async (f) => plainText(await f.text()), handleKey: "sqlDir",
       editable: true,
       handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
@@ -773,7 +807,7 @@
     },
     docx: {
       key: "docx", label: "Word", dir: "word",
-      re: /\.docx$/i, accept: ".docx",
+      re: /\.docx$/i, accept: ".docx", defaultExt: ".docx",
       read: async (f) => docxToText(await f.arrayBuffer()), handleKey: "wordDir",
       editable: false,
       handle: null, loaded: false, records: [], folders: [], folderFilter: "__all__", uploadFolder: "", docFreq: new Map(), query: "",
@@ -781,7 +815,7 @@
     },
     excel: {
       key: "excel", label: "Excel", dir: "excel",
-      re: /\.(xlsx|xlsm|csv)$/i, accept: ".xlsx,.xlsm,.csv",
+      re: /\.(xlsx|xlsm|csv)$/i, accept: ".xlsx,.xlsm,.csv", defaultExt: ".xlsx",
       read: async (f) => {
         if (/\.csv$/i.test(f.name)) {
           const raw = await f.text();
@@ -985,11 +1019,11 @@
 
   function updateFolderInfo() {
     if (active.folderFilter === "__all__") {
-      folderInfo.textContent = "Searching all folders · uploads go to no folder";
+      folderInfo.textContent = "Searching all folders · new files and uploads go to no folder";
     } else if (active.folderFilter) {
-      folderInfo.textContent = "Showing /" + active.folderFilter + " · uploads and moves go here";
+      folderInfo.textContent = "Showing /" + active.folderFilter + " · new files, uploads and moves go here";
     } else {
-      folderInfo.textContent = "Showing files with no folder · uploads and moves go here";
+      folderInfo.textContent = "Showing files with no folder · new files, uploads and moves go here";
     }
   }
 
@@ -1213,6 +1247,274 @@
     }
   }
 
+  /* ---------- create a new file of the active tab's type ----------
+     The file is written into the selected folder with the name the user
+     typed. HTML files start as a small page skeleton, text/SQL/CSV files
+     start empty, and Word/Excel files are minimal valid Office packages
+     (a ZIP with stored entries) so they open in Office and index here. */
+  const XML_HEAD = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const OPC_TYPES_NS = "http://schemas.openxmlformats.org/package/2006/content-types";
+  const OPC_RELS_NS = "http://schemas.openxmlformats.org/package/2006/relationships";
+  const OFFICE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const RELS_TYPE = "application/vnd.openxmlformats-package.relationships+xml";
+
+  const CRC_TABLE = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    CRC_TABLE[n] = c >>> 0;
+  }
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  // Minimal ZIP writer: entries are stored uncompressed, which every Office
+  // application and the reader above accept.
+  function zipStore(entries, mime) {
+    const encoder = new TextEncoder();
+    const now = new Date();
+    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    const locals = [];
+    const central = [];
+    let offset = 0;
+    let centralSize = 0;
+    for (const [name, text] of entries) {
+      const nameBytes = encoder.encode(name);
+      const data = encoder.encode(text);
+      const crc = crc32(data);
+      const local = new DataView(new ArrayBuffer(30));
+      local.setUint32(0, 0x04034b50, true);   // local file header
+      local.setUint16(4, 20, true);           // version needed
+      local.setUint16(6, 0x0800, true);       // flags: UTF-8 names
+      local.setUint16(8, 0, true);            // method: stored
+      local.setUint16(10, dosTime, true);
+      local.setUint16(12, dosDate, true);
+      local.setUint32(14, crc, true);
+      local.setUint32(18, data.length, true);
+      local.setUint32(22, data.length, true);
+      local.setUint16(26, nameBytes.length, true);
+      local.setUint16(28, 0, true);
+      locals.push(local.buffer, nameBytes, data);
+      const entry = new DataView(new ArrayBuffer(46));
+      entry.setUint32(0, 0x02014b50, true);   // central directory header
+      entry.setUint16(4, 20, true);
+      entry.setUint16(6, 20, true);
+      entry.setUint16(8, 0x0800, true);
+      entry.setUint16(10, 0, true);
+      entry.setUint16(12, dosTime, true);
+      entry.setUint16(14, dosDate, true);
+      entry.setUint32(16, crc, true);
+      entry.setUint32(20, data.length, true);
+      entry.setUint32(24, data.length, true);
+      entry.setUint16(28, nameBytes.length, true);
+      entry.setUint16(30, 0, true);
+      entry.setUint16(32, 0, true);
+      entry.setUint16(34, 0, true);
+      entry.setUint16(36, 0, true);
+      entry.setUint32(38, 0, true);
+      entry.setUint32(42, offset, true);
+      central.push(entry.buffer, nameBytes);
+      offset += 30 + nameBytes.length + data.length;
+      centralSize += 46 + nameBytes.length;
+    }
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true);       // end of central directory
+    end.setUint16(4, 0, true);
+    end.setUint16(6, 0, true);
+    end.setUint16(8, entries.length, true);
+    end.setUint16(10, entries.length, true);
+    end.setUint32(12, centralSize, true);
+    end.setUint32(16, offset, true);
+    end.setUint16(20, 0, true);
+    return new Blob([...locals, ...central, end.buffer], { type: mime });
+  }
+
+  function emptyDocxBlob() {
+    return zipStore([
+      ["[Content_Types].xml", XML_HEAD +
+        '<Types xmlns="' + OPC_TYPES_NS + '">' +
+        '<Default Extension="rels" ContentType="' + RELS_TYPE + '"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+        '</Types>'],
+      ["_rels/.rels", XML_HEAD +
+        '<Relationships xmlns="' + OPC_RELS_NS + '">' +
+        '<Relationship Id="rId1" Type="' + OFFICE_REL + '/officeDocument" Target="word/document.xml"/>' +
+        '</Relationships>'],
+      ["word/document.xml", XML_HEAD +
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+        '<w:body><w:p/></w:body></w:document>']
+    ], "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+  }
+
+  function emptyXlsxBlob(macroEnabled) {
+    const workbookType = macroEnabled
+      ? "application/vnd.ms-excel.sheet.macroEnabled.main+xml"
+      : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+    return zipStore([
+      ["[Content_Types].xml", XML_HEAD +
+        '<Types xmlns="' + OPC_TYPES_NS + '">' +
+        '<Default Extension="rels" ContentType="' + RELS_TYPE + '"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Override PartName="/xl/workbook.xml" ContentType="' + workbookType + '"/>' +
+        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+        '</Types>'],
+      ["_rels/.rels", XML_HEAD +
+        '<Relationships xmlns="' + OPC_RELS_NS + '">' +
+        '<Relationship Id="rId1" Type="' + OFFICE_REL + '/officeDocument" Target="xl/workbook.xml"/>' +
+        '</Relationships>'],
+      ["xl/workbook.xml", XML_HEAD +
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="' + OFFICE_REL + '">' +
+        '<sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+      ["xl/_rels/workbook.xml.rels", XML_HEAD +
+        '<Relationships xmlns="' + OPC_RELS_NS + '">' +
+        '<Relationship Id="rId1" Type="' + OFFICE_REL + '/worksheet" Target="worksheets/sheet1.xml"/>' +
+        '</Relationships>'],
+      ["xl/worksheets/sheet1.xml", XML_HEAD +
+        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData/></worksheet>']
+    ], macroEnabled
+      ? "application/vnd.ms-excel.sheet.macroEnabled.12"
+      : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  }
+
+  function newFileBlob(name) {
+    const ext = name.slice(name.lastIndexOf(".")).toLowerCase();
+    if (ext === ".docx") return emptyDocxBlob();
+    if (ext === ".xlsx" || ext === ".xlsm") return emptyXlsxBlob(ext === ".xlsm");
+    if (ext === ".html" || ext === ".htm") {
+      const title = name.slice(0, name.length - ext.length);
+      return new Blob([
+        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '<title>' + escapeHtml(title) + '</title>\n</head>\n<body>\n\n</body>\n</html>\n'
+      ], { type: "text/html" });
+    }
+    return new Blob([], { type: "text/plain" });
+  }
+
+  // Turn what the user typed into the final file name for the active tab.
+  // An accepted extension is kept; otherwise the tab's default one is added.
+  function resolveNewFileName(raw) {
+    const typed = (raw || "").trim();
+    if (!typed) return { error: "" };
+    if (/[\\/]/.test(typed)) return { error: "Use a file name without / or \\ (choose the folder above)." };
+    if (/[<>:"|?*]/.test(typed)) return { error: 'These characters cannot be used in a file name: < > : " | ? *' };
+    if (/[\u0000-\u001f\u007f]/.test(typed)) return { error: "The name contains control characters." };
+    let name = typed;
+    if (!active.re.test(name)) {
+      name = name.replace(/[.\s]+$/, "");
+      if (!name) return { error: "Type a name for the file." };
+      name += active.defaultExt;
+    }
+    const stem = name.slice(0, name.lastIndexOf("."));
+    if (!stem || /^\.+$/.test(stem)) return { error: "Type a name before the extension." };
+    const path = active.uploadFolder ? active.uploadFolder + "/" + name : name;
+    if (active.records.some(rec => rec.name === path)) {
+      return { error: name + " already exists in " + (active.uploadFolder ? "/" + active.uploadFolder : "the " + active.dir + " folder") + "." };
+    }
+    return { name, path };
+  }
+
+  function updateNewFilePreview() {
+    const result = resolveNewFileName(newFileInput.value);
+    newFileError.textContent = result.error || "";
+    newFileError.hidden = !result.error;
+    newFileCreate.disabled = !result.name;
+    if (result.name) {
+      newFileHint.innerHTML = "Saved as <code>" + escapeHtml(result.name) + "</code>";
+    } else {
+      newFileHint.innerHTML = "Allowed extensions: " + escapeHtml(active.accept.split(",").join(", ")) +
+        ". Without one, <code>" + escapeHtml(active.defaultExt) + "</code> is added.";
+    }
+  }
+
+  async function openNewFileDialog() {
+    if (!supportsFS) { renderUnsupported(); return; }
+    if (!active.handle) {
+      showToast("Open the " + active.dir + " folder first.");
+      await pickFolder();
+      if (!active.handle) return;
+    }
+    if (!(await ensurePermission(active.handle, true))) {
+      showToast("Write permission denied.");
+      return;
+    }
+    newFileTitle.textContent = "New " + active.label + " file";
+    newFileWhere.textContent = active.uploadFolder
+      ? "It will be saved in /" + active.uploadFolder + "."
+      : "It will be saved at the top level of the " + active.dir + " folder.";
+    newFileInput.value = "";
+    newFileInput.placeholder = "e.g. meeting-notes" + active.defaultExt;
+    newFileCreate.textContent = "Create";
+    updateNewFilePreview();
+    if (typeof newFileDialog.showModal === "function") newFileDialog.showModal();
+    setTimeout(() => newFileInput.focus(), 30);
+  }
+
+  async function createNewFile() {
+    const col = active;
+    const result = resolveNewFileName(newFileInput.value);
+    if (!result.name) { updateNewFilePreview(); return; }
+    newFileCreate.disabled = true;
+    newFileCreate.textContent = "Creating…";
+    try {
+      if (!col.handle || !(await ensurePermission(col.handle, true))) throw new Error("Write permission denied.");
+      const blob = newFileBlob(result.name);
+      if (remoteMode) {
+        const body = new FormData();
+        body.append("folder", col.uploadFolder);
+        body.append("files", blob, result.name);
+        const response = await fetch(apiUrl(col.key), { method: "POST", body });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Could not create the file.");
+        if (data.skipped && data.skipped.length) throw new Error(result.name + " already exists.");
+        if (!data.uploaded || !data.uploaded.length) throw new Error("The server did not accept that file name.");
+      } else {
+        const dir = await directoryAt(col.handle, col.uploadFolder, false);
+        let exists = true;
+        try {
+          await dir.getFileHandle(result.name);
+        } catch (err) {
+          if (!err || err.name !== "NotFoundError") throw err;
+          exists = false;
+        }
+        if (exists) throw new Error(result.name + " already exists.");
+        const target = await dir.getFileHandle(result.name, { create: true });
+        const writable = await target.createWritable();
+        try {
+          await writable.write(blob);
+          await writable.close();
+        } catch (err) {
+          try { await writable.abort(); } catch (_) {}
+          throw err;
+        }
+      }
+      newFileDialog.close();
+      col.loaded = false;
+      await listFiles();
+      showToast("Created: " + result.path);
+      const rec = col.records.find(r => r.name === result.path);
+      if (rec && col.editable && active === col) openEditor(rec);
+    } catch (err) {
+      newFileError.textContent = (err && err.message) || "Could not create the file.";
+      newFileError.hidden = false;
+    } finally {
+      newFileCreate.textContent = "Create";
+      newFileCreate.disabled = false;
+    }
+  }
+
+  newFileBtn.addEventListener("click", openNewFileDialog);
+  newFileInput.addEventListener("input", updateNewFilePreview);
+  newFileCancel.addEventListener("click", () => newFileDialog.close());
+  newFileForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    createNewFile();
+  });
+
   /* ---------- tab switching ---------- */
   function updateChrome() {
     tabEls.forEach(t => t.setAttribute("aria-selected", String(t.dataset.key === active.key)));
@@ -1220,6 +1522,7 @@
     subText.innerHTML = "Index of files in the <code>" + active.dir + "</code> folder";
     pickBtn.textContent = "Open " + active.dir + " folder";
     uploadBtn.textContent = "Upload " + active.label + " files";
+    newFileBtn.title = "Create a new " + active.defaultExt + " file in the selected folder";
     uploadInput.accept = active.accept;
     searchInput.placeholder = "Search " + active.label.toLowerCase() +
       " records by name or content…";
@@ -2184,6 +2487,7 @@
     pickBtn.disabled = true;
     uploadBtn.disabled = true;
     newFolderBtn.disabled = true;
+    newFileBtn.disabled = true;
     folderSelect.disabled = true;
   }
 

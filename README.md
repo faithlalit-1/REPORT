@@ -16,6 +16,7 @@ The equivalent alias `https://report.shitikanthay.co.in` routes to the same appl
 - Separate HTML, Text, SQL, Word, and Excel tabs
 - Multiple-file uploads with category-specific extension validation
 - Nested folders and subfolders inside every file category
+- **New file** button that creates an empty file of the active tab's type, with a user-chosen name, in the selected folder
 - Folder-scoped browsing, filename filtering, and content search
 - Checkbox selection for moving multiple files into another folder
 - Duplicate-file confirmation before replacement
@@ -42,6 +43,16 @@ Files are stored directly in category directories under the repository:
 Uploaded files survive application restarts and Raspberry Pi reboots because they are written to these directories, not held in browser or process memory.
 
 Folders can be nested to any practical depth. Select an existing folder in the **Folder** control, use **New folder** to create a child folder, and then upload files into it. Selecting a folder limits the file filter and content search to that folder and its subfolders; choose **All folders** to search the entire active file-type tab. Results retain their relative folder path, so files with the same basename can exist in different folders.
+
+### Creating a new file
+
+Click **New file** on any tab to create an empty record without uploading one. The file is written to the folder currently selected in the **Folder** control (or to the top-level category directory when **All folders** or **No folder** is selected). Type a name in the dialog:
+
+- If the name ends with an extension accepted by the active tab, it is kept as typed.
+- Otherwise the tab's default extension is added: `.html` (HTML), `.txt` (Text), `.sql` (SQL), `.docx` (Word), or `.xlsx` (Excel). The dialog previews the final name before you confirm.
+- Names containing `/`, `\`, or the characters `< > : " | ? *` are rejected, and a name already used in the target folder cannot be reused.
+
+New HTML files start with a minimal page skeleton and text, SQL, and CSV files start empty. New Word and Excel files are minimal valid Office documents with an empty body or a single empty sheet. HTML, text, and SQL records open in the editor immediately after they are created. In remote mode the file is created through the same upload endpoint as manual uploads; in local mode it is written straight into the chosen directory.
 
 ### Folder selection and search
 

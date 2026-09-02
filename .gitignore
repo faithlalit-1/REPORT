@@ -3,6 +3,7 @@ html/
 docx/
 excel/
 text/
+sql/
 
 # macOS
 .DS_Store
