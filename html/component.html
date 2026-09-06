@@ -91,7 +91,7 @@
 <body>
   <header class="hero">
     <h1>⚙️ Electronic Components Reference</h1>
-    <p>14 categories &middot; 106 components &middot; each with explanation, uses, working principle and example projects</p>
+    <p>14 categories &middot; 107 components &middot; each with explanation, uses, working principle and example projects</p>
   </header>
   <div class="wrap">
     <section class="explorer" aria-labelledby="explorer-title">
@@ -142,7 +142,7 @@
       <a href="#microcontroller-boards">🖥️ Microcontroller Boards <span class="count">12</span></a>
       <a href="#sensors">📡 Sensors <span class="count">11</span></a>
       <a href="#actuators">🤖 Actuators <span class="count">2</span></a>
-      <a href="#modules">🧰 Modules <span class="count">39</span></a>
+      <a href="#modules">🧰 Modules <span class="count">40</span></a>
     </nav>
 
     <section id="transistor" class="card">
@@ -307,7 +307,7 @@
     </section>
 
     <section id="modules" class="card">
-      <h2>🧰 Modules <span class="badge">39 items</span></h2>
+      <h2>🧰 Modules <span class="badge">40 items</span></h2>
       <ul class="items">
           <li>SIM800L - SIm message and calling 2g</li>
           <li>PAM8403 - Audio amplifier</li>
@@ -348,6 +348,7 @@
           <li><a href="https://www.hnhcart.com/products/vibration-sensor-module" target="_blank" rel="noopener">SW-420 Vibration Sensor Module</a></li>
           <li data-updated="2026-08-22"><a href="https://www.flyrobo.in/ultimate-pico-rp2040-128mbit-16mb-microcontroller-development-board" target="_blank" rel="noopener">Ultimate Pico RP2040</a> - Dual-core RP2040 development board with 16 MB flash and USB-C</li>
           <li data-updated="2026-08-22"><a href="https://www.winbond.com/hq/product/code-storage-flash/qspi-nor/w25q-jv/?__locale=en&amp;partNo=W25Q128JVBIQ" target="_blank" rel="noopener">W25Q128 Flash Storage</a> - 128 Mbit (16 MB) SPI/Dual/Quad SPI NOR flash memory</li>
+          <li data-updated="2026-09-06"><a href="https://www.waveshare.com/wiki/1.28inch_LCD_Module" target="_blank" rel="noopener">GC9A01 1.28-Inch Round LCD Display Module</a> - 240 x 240 IPS color display with a 4-wire SPI interface</li>
       </ul>
     </section>
 
@@ -898,6 +899,14 @@
           uses:['Status displays for sensors and IoT nodes','Menus and small user interfaces','Tiny gauges, graphs and animations','Wearable and battery devices (dark pixels use no power)'],
           principle:'The SSD1306 chip holds a 1-bit-per-pixel frame buffer in its RAM and continuously scans it out to the OLED matrix, controlling the current through each self-emissive pixel. The microcontroller only sends drawing commands and buffer updates over I2C, so even slow MCUs can run it.',
           projects:['Desk clock with weather from Wi-Fi','Crypto/stock ticker display','Heart-rate monitor readout']
+        },
+        'GC9A01 1.28-Inch Round LCD Display Module':{
+          explanation:'This 1.28-inch round IPS LCD module uses the GC9A01 display controller to produce a 240 x 240-pixel, 65K-color image. The linked Waveshare module accepts 3.3 V or 5 V power and connects to Raspberry Pi, Arduino, STM32, ESP32 and other controllers through a compact 4-wire SPI interface.',
+          keywords:['round TFT','color LCD','240x240 display','SPI screen','GC9A01A'],
+          uses:['Round gauges, dials and instrument panels','Smartwatch-style interfaces and wearable displays','Compact status screens for robots and IoT devices','Animated eyes, clocks and decorative graphics'],
+          specs:['Display: 1.28-inch round IPS LCD','Controller: GC9A01','Resolution: 240 x 240 pixels','Color depth: 65K RGB colors','Communication: 4-wire SPI','Operating voltage: 3.3 V or 5 V','Active display diameter: 32.4 mm','Pixel pitch: 0.135 x 0.135 mm','Pins: VCC, GND, DIN, CLK, CS, DC, RST and BL'],
+          principle:'A microcontroller sends commands and pixel data to the GC9A01 over SPI using DIN and CLK, while CS selects the display and DC distinguishes commands from image data. The controller stores incoming pixels in its internal graphics memory and continuously drives the 240 x 240 TFT matrix; the BL pin controls the LED backlight.',
+          projects:['ESP32 round Wi-Fi weather clock','RP2040 analog gauge or speedometer','Arduino animated-eye display','Compact robot status dashboard']
         },
         'WTV020M01':{
           explanation:'The WTV020-SD-16P is an audio playback module that plays WAV/AD4 files from a microSD card (up to 1 GB, up to 512 tracks) through a 16-bit DAC or PWM output. It runs from 2.5-3.6 V and can be controlled by buttons or a two-wire serial link.',
